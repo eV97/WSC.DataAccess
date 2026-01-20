@@ -1,0 +1,104 @@
+using Microsoft.Extensions.DependencyInjection;
+using WSC.DataAccess.Core;
+using WSC.DataAccess.Mapping;
+
+namespace WSC.DataAccess.Configuration;
+
+/// <summary>
+/// Extension methods for setting up data access services in an IServiceCollection
+/// </summary>
+public static class DataAccessServiceCollectionExtensions
+{
+    /// <summary>
+    /// Adds WSC Data Access services to the specified IServiceCollection
+    /// </summary>
+    public static IServiceCollection AddWscDataAccess(
+        this IServiceCollection services,
+        string connectionString,
+        Action<DataAccessOptions>? configure = null)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new ArgumentException("Connection string cannot be null or empty", nameof(connectionString));
+
+        var options = new DataAccessOptions();
+        configure?.Invoke(options);
+
+        // Register connection factory
+        services.AddSingleton<IDbConnectionFactory>(sp => new SqlConnectionFactory(connectionString));
+
+        // Register session factory
+        services.AddSingleton<IDbSessionFactory>(sp =>
+        {
+            var connectionFactory = sp.GetRequiredService<IDbConnectionFactory>();
+            var sessionFactory = new DbSessionFactory(connectionFactory, options.NamedConnectionStrings);
+            return sessionFactory;
+        });
+
+        // Register SQL map configuration
+        services.AddSingleton(sp =>
+        {
+            var config = new SqlMapConfig();
+
+            // Load SQL map files if configured
+            foreach (var sqlMapFile in options.SqlMapFiles)
+            {
+                config.LoadFromXml(sqlMapFile);
+            }
+
+            return config;
+        });
+
+        // Register SQL mapper
+        services.AddSingleton<SqlMapper>(sp =>
+        {
+            var config = sp.GetRequiredService<SqlMapConfig>();
+            return new SqlMapper(config);
+        });
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds a named connection string
+    /// </summary>
+    public static IServiceCollection AddNamedConnection(
+        this IServiceCollection services,
+        string name,
+        string connectionString)
+    {
+        // This is handled through DataAccessOptions
+        return services;
+    }
+}
+
+/// <summary>
+/// Options for configuring WSC Data Access
+/// </summary>
+public class DataAccessOptions
+{
+    /// <summary>
+    /// Named connection strings
+    /// </summary>
+    public Dictionary<string, string> NamedConnectionStrings { get; set; } = new();
+
+    /// <summary>
+    /// SQL Map XML files to load
+    /// </summary>
+    public List<string> SqlMapFiles { get; set; } = new();
+
+    /// <summary>
+    /// Adds a named connection string
+    /// </summary>
+    public void AddConnection(string name, string connectionString)
+    {
+        NamedConnectionStrings[name] = connectionString;
+    }
+
+    /// <summary>
+    /// Adds a SQL map file
+    /// </summary>
+    public void AddSqlMapFile(string filePath)
+    {
+        SqlMapFiles.Add(filePath);
+    }
+}
