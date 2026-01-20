@@ -10,6 +10,27 @@ Logging đã được tích hợp vào tất cả các thành phần chính củ
 - ✅ **DbSession**: Ghi log connection và transaction management
 - ✅ **SqlMapRepository**: Ghi log các repository operations
 
+## Yêu Cầu (Requirements)
+
+### NuGet Packages
+
+**QUAN TRỌNG**: Để sử dụng iBatis logging, project của bạn cần có các Serilog packages sau:
+
+```xml
+<PackageReference Include="Serilog" Version="3.1.1" />
+<PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+<PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+```
+
+**Lưu ý**: Mặc dù WSC.DataAccess library đã có Serilog, nhưng **application project** (console app, web app) cũng cần cài các packages này để sử dụng `logging.AddIBatisLogging()`.
+
+### Lý do tại sao cần packages ở application project?
+
+- WSC.DataAccess chứa logging code và Serilog dependency
+- Nhưng extension method `AddIBatisLogging()` cần Serilog packages ở application project để hoạt động
+- Nếu thiếu packages, bạn sẽ không thấy logs được ghi ra
+
 ## Cấu hình Logging
 
 ### 1. Thư mục Log Files
