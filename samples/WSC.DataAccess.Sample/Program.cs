@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using WSC.DataAccess.Configuration;
 using WSC.DataAccess.Examples.Models;
 using WSC.DataAccess.Examples.Repositories;
@@ -21,6 +22,16 @@ class Program
 
         // Setup dependency injection
         var host = Host.CreateDefaultBuilder(args)
+            .ConfigureLogging((context, logging) =>
+            {
+                // Configure iBatis logging
+                logging.ClearProviders();
+                logging.AddIBatisLogging();
+
+                Console.WriteLine("✓ iBatis logging configured");
+                Console.WriteLine($"   Log directory: log/iBatis/");
+                Console.WriteLine($"   Log files: ibatis-YYYYMMDD.log, ibatis-errors-YYYYMMDD.log\n");
+            })
             .ConfigureServices((context, services) =>
             {
                 // Get connection string
