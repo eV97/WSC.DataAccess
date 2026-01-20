@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using WSC.DataAccess.Core;
 using WSC.DataAccess.Mapping;
 
@@ -30,14 +31,16 @@ public static class DataAccessServiceCollectionExtensions
         services.AddSingleton<IDbSessionFactory>(sp =>
         {
             var connectionFactory = sp.GetRequiredService<IDbConnectionFactory>();
-            var sessionFactory = new DbSessionFactory(connectionFactory, options.NamedConnectionStrings);
+            var logger = sp.GetService<ILogger<DbSession>>();
+            var sessionFactory = new DbSessionFactory(connectionFactory, options.NamedConnectionStrings, logger);
             return sessionFactory;
         });
 
         // Register SQL map configuration
         services.AddSingleton(sp =>
         {
-            var config = new SqlMapConfig();
+            var logger = sp.GetRequiredService<ILogger<SqlMapConfig>>();
+            var config = new SqlMapConfig(logger);
 
             // Load SQL map files if configured
             foreach (var sqlMapFile in options.SqlMapFiles)
@@ -52,7 +55,8 @@ public static class DataAccessServiceCollectionExtensions
         services.AddSingleton<SqlMapper>(sp =>
         {
             var config = sp.GetRequiredService<SqlMapConfig>();
-            return new SqlMapper(config);
+            var logger = sp.GetRequiredService<ILogger<SqlMapper>>();
+            return new SqlMapper(config, logger);
         });
 
         return services;
