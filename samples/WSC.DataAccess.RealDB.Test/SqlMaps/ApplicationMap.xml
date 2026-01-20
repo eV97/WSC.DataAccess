@@ -100,4 +100,230 @@
     WHERE IsActive = 1
   </select>
 
+  <!--
+    ═══════════════════════════════════════════════════════════════════════
+    CDATA EXAMPLES - Sử dụng CDATA cho queries có dấu < > và &
+    ═══════════════════════════════════════════════════════════════════════
+  -->
+
+  <!-- Example 1: Query với dấu < và > - Dùng CDATA -->
+  <select id="Application.GetByPriceRange" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    <![CDATA[
+      SELECT
+        Id,
+        ApplicationName,
+        Description,
+        Version,
+        CreatedDate,
+        UpdatedDate,
+        IsActive
+      FROM Applications
+      WHERE Price >= @MinPrice
+        AND Price <= @MaxPrice
+        AND IsActive = 1
+      ORDER BY Price
+    ]]>
+  </select>
+
+  <!-- Example 2: Query với nhiều điều kiện < và > - Dùng CDATA -->
+  <select id="Application.GetByDateRange" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    <![CDATA[
+      SELECT *
+      FROM Applications
+      WHERE CreatedDate >= @StartDate
+        AND CreatedDate <= @EndDate
+        AND (UpdatedDate IS NULL OR UpdatedDate < GETDATE())
+        AND IsActive = 1
+      ORDER BY CreatedDate DESC
+    ]]>
+  </select>
+
+  <!-- Example 3: Query phức tạp với CASE, <, >, và AND/OR - Dùng CDATA -->
+  <select id="Application.GetFilteredApplications" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    <![CDATA[
+      SELECT
+        Id,
+        ApplicationName,
+        Description,
+        Version,
+        CreatedDate,
+        UpdatedDate,
+        IsActive,
+        CASE
+          WHEN CreatedDate >= DATEADD(day, -30, GETDATE()) THEN 'New'
+          WHEN CreatedDate >= DATEADD(day, -90, GETDATE()) THEN 'Recent'
+          ELSE 'Old'
+        END AS AgeCategory
+      FROM Applications
+      WHERE IsActive = 1
+        AND (
+          (@MinVersion IS NULL OR Version >= @MinVersion)
+          AND (@MaxVersion IS NULL OR Version <= @MaxVersion)
+        )
+        AND (
+          (@SearchTerm IS NULL OR ApplicationName LIKE '%' + @SearchTerm + '%')
+          OR (@SearchTerm IS NULL OR Description LIKE '%' + @SearchTerm + '%')
+        )
+      ORDER BY CreatedDate DESC
+    ]]>
+  </select>
+
+  <!-- Example 4: Query với NOT IN và subquery - Dùng CDATA -->
+  <select id="Application.GetExcludingIds" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    <![CDATA[
+      SELECT *
+      FROM Applications
+      WHERE Id NOT IN (
+        SELECT ApplicationId
+        FROM DisabledApplications
+        WHERE DisabledDate > DATEADD(month, -3, GETDATE())
+      )
+      AND IsActive = 1
+      ORDER BY ApplicationName
+    ]]>
+  </select>
+
+  <!-- Example 5: Query với COUNT, GROUP BY, HAVING - Dùng CDATA -->
+  <select id="Application.GetStatsByVersion">
+    <![CDATA[
+      SELECT
+        Version,
+        COUNT(*) AS TotalCount,
+        SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS ActiveCount,
+        MIN(CreatedDate) AS FirstCreated,
+        MAX(UpdatedDate) AS LastUpdated
+      FROM Applications
+      WHERE Version IS NOT NULL
+      GROUP BY Version
+      HAVING COUNT(*) > @MinCount
+      ORDER BY Version DESC
+    ]]>
+  </select>
+
+  <!--
+    ═══════════════════════════════════════════════════════════════════════
+    ALTERNATIVE: Sử dụng XML Entities thay vì CDATA
+    ═══════════════════════════════════════════════════════════════════════
+
+    Nếu không dùng CDATA, bạn phải escape các ký tự đặc biệt:
+    < (less than)       → &lt;
+    > (greater than)    → &gt;
+    & (ampersand)       → &amp;
+    " (quote)           → &quot;
+    ' (apostrophe)      → &apos;
+  -->
+
+  <!-- Example 6: Query dùng XML Entities (không dùng CDATA) -->
+  <select id="Application.GetByPriceRangeNoCD ATA" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    SELECT *
+    FROM Applications
+    WHERE Price &gt;= @MinPrice
+      AND Price &lt;= @MaxPrice
+      AND IsActive = 1
+    ORDER BY Price
+  </select>
+
+  <!-- Example 7: Complex query với XML Entities -->
+  <select id="Application.GetRecentAppsNoCD ATA" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    SELECT *
+    FROM Applications
+    WHERE CreatedDate &gt;= @SinceDate
+      AND (UpdatedDate IS NULL OR UpdatedDate &lt; GETDATE())
+      AND IsActive = 1
+    ORDER BY CreatedDate DESC
+  </select>
+
+  <!--
+    ═══════════════════════════════════════════════════════════════════════
+    BEST PRACTICE: Khi nào dùng CDATA?
+    ═══════════════════════════════════════════════════════════════════════
+
+    ✅ DÙNG CDATA khi:
+       - Query có nhiều dấu <, >, &
+       - Complex queries với CASE, subqueries
+       - Dễ đọc và maintain hơn
+
+    ❌ KHÔNG DÙNG CDATA khi:
+       - Query đơn giản
+       - Không có dấu <, >, &
+       - Muốn XML editor validate syntax
+
+    📝 LƯU Ý:
+       - CDATA section bắt đầu với <![CDATA[
+       - CDATA section kết thúc với ]]>
+       - Trong CDATA, XML không parse special characters
+       - Indent code trong CDATA cho dễ đọc
+  -->
+
+  <!-- Example 8: Nested queries và complex conditions - Dùng CDATA -->
+  <select id="Application.GetTopApplicationsWithDetails">
+    <![CDATA[
+      WITH ApplicationStats AS (
+        SELECT
+          a.Id,
+          a.ApplicationName,
+          a.Version,
+          COUNT(u.UserId) AS UserCount,
+          AVG(u.Rating) AS AvgRating
+        FROM Applications a
+        LEFT JOIN UserRatings u ON a.Id = u.ApplicationId
+        WHERE a.IsActive = 1
+          AND a.CreatedDate >= @SinceDate
+        GROUP BY a.Id, a.ApplicationName, a.Version
+        HAVING COUNT(u.UserId) > 0
+      )
+      SELECT TOP (@TopN)
+        Id,
+        ApplicationName,
+        Version,
+        UserCount,
+        AvgRating,
+        CASE
+          WHEN AvgRating >= 4.5 THEN 'Excellent'
+          WHEN AvgRating >= 3.5 THEN 'Good'
+          WHEN AvgRating >= 2.5 THEN 'Average'
+          ELSE 'Poor'
+        END AS RatingCategory
+      FROM ApplicationStats
+      WHERE AvgRating > @MinRating
+      ORDER BY AvgRating DESC, UserCount DESC
+    ]]>
+  </select>
+
+  <!-- Example 9: Dynamic search với multiple conditions - Dùng CDATA -->
+  <select id="Application.DynamicSearch" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    <![CDATA[
+      SELECT *
+      FROM Applications
+      WHERE IsActive = 1
+        AND (@ApplicationName IS NULL OR ApplicationName LIKE '%' + @ApplicationName + '%')
+        AND (@MinVersion IS NULL OR Version >= @MinVersion)
+        AND (@MaxVersion IS NULL OR Version <= @MaxVersion)
+        AND (@CreatedAfter IS NULL OR CreatedDate >= @CreatedAfter)
+        AND (@CreatedBefore IS NULL OR CreatedDate <= @CreatedBefore)
+        AND (@Description IS NULL OR Description LIKE '%' + @Description + '%')
+      ORDER BY
+        CASE WHEN @SortBy = 'Name' THEN ApplicationName END ASC,
+        CASE WHEN @SortBy = 'Date' THEN CreatedDate END DESC,
+        CASE WHEN @SortBy = 'Version' THEN Version END DESC,
+        ApplicationName -- Default sort
+    ]]>
+  </select>
+
+  <!-- Example 10: Query với XML characters trong string values - Dùng CDATA -->
+  <select id="Application.SearchSpecialChars" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    <![CDATA[
+      SELECT *
+      FROM Applications
+      WHERE IsActive = 1
+        AND (
+          ApplicationName LIKE '%<xml>%'
+          OR ApplicationName LIKE '%&%'
+          OR Description LIKE '%<%'
+          OR Description LIKE '%>%'
+        )
+      ORDER BY ApplicationName
+    ]]>
+  </select>
+
 </sqlMap>
