@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace WSC.DataAccess.Core;
 
 /// <summary>
@@ -7,24 +9,27 @@ public class DbSessionFactory : IDbSessionFactory
 {
     private readonly IDbConnectionFactory _connectionFactory;
     private readonly Dictionary<string, string> _connectionStrings;
+    private readonly ILogger<DbSession>? _logger;
 
-    public DbSessionFactory(IDbConnectionFactory connectionFactory)
+    public DbSessionFactory(IDbConnectionFactory connectionFactory, ILogger<DbSession>? logger = null)
     {
         _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
         _connectionStrings = new Dictionary<string, string>();
+        _logger = logger;
     }
 
-    public DbSessionFactory(IDbConnectionFactory connectionFactory, Dictionary<string, string> connectionStrings)
+    public DbSessionFactory(IDbConnectionFactory connectionFactory, Dictionary<string, string> connectionStrings, ILogger<DbSession>? logger = null)
     {
         _connectionFactory = connectionFactory ?? throw new ArgumentNullException(nameof(connectionFactory));
         _connectionStrings = connectionStrings ?? new Dictionary<string, string>();
+        _logger = logger;
     }
 
     /// <inheritdoc/>
     public DbSession OpenSession()
     {
         var connection = _connectionFactory.CreateConnection();
-        return new DbSession(connection);
+        return new DbSession(connection, _logger);
     }
 
     /// <inheritdoc/>
@@ -36,7 +41,7 @@ public class DbSessionFactory : IDbSessionFactory
         }
 
         var connection = _connectionFactory.CreateConnection(connectionString);
-        return new DbSession(connection);
+        return new DbSession(connection, _logger);
     }
 
     /// <summary>

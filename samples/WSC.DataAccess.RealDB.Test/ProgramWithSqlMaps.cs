@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using WSC.DataAccess.Configuration;
 using WSC.DataAccess.Core;
 using WSC.DataAccess.RealDB.Test.Repositories;
@@ -42,6 +43,17 @@ public class ProgramWithSqlMaps
 
         // Setup DI với SqlMaps
         var host = Host.CreateDefaultBuilder(args)
+            .ConfigureLogging((context, logging) =>
+            {
+                // Configure iBatis logging
+                logging.ClearProviders();
+                logging.AddIBatisLogging();
+
+                Console.WriteLine("✓ iBatis logging configured");
+                Console.WriteLine($"   Log directory: log/iBatis/");
+                Console.WriteLine($"   Log files: ibatis-YYYYMMDD.log, ibatis-errors-YYYYMMDD.log");
+                Console.WriteLine();
+            })
             .ConfigureServices((context, services) =>
             {
                 // 🔥 QUAN TRỌNG: Đăng ký SQL Map files
