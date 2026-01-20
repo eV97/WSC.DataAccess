@@ -210,27 +210,34 @@ public class ProgramWithSqlMaps
                 Console.WriteLine("📝 Test 3.1: Insert và Update trong Transaction");
                 try
                 {
-                    var result = await appRepo.ExecuteInTransactionAsync(async (session) =>
+                    // Sử dụng session factory để tạo transaction thủ công
+                    using (var session = sessionFactory.OpenSession())
                     {
-                        // Insert new application
-                        var newApp = new Application
+                        session.BeginTransaction();
+
+                        try
                         {
-                            ApplicationName = $"Test App {DateTime.Now.Ticks}",
-                            Description = "Created by SqlMaps demo",
-                            Version = "1.0.0"
-                        };
+                            // Insert new application
+                            var newApp = new Application
+                            {
+                                ApplicationName = $"Test App {DateTime.Now.Ticks}",
+                                Description = "Created by SqlMaps demo",
+                                Version = "1.0.0"
+                            };
 
-                        Console.WriteLine($"   → Inserting: {newApp.ApplicationName}");
-                        await sqlMapper.ExecuteAsync(session, "Application.Insert", newApp);
+                            Console.WriteLine($"   → Inserting: {newApp.ApplicationName}");
+                            await sqlMapper.ExecuteAsync(session, "Application.Insert", newApp);
 
-                        Console.WriteLine("   → Transaction committed successfully");
+                            Console.WriteLine("   → Transaction committed successfully");
+                            session.Commit();
 
-                        return true;
-                    });
-
-                    if (result)
-                    {
-                        Console.WriteLine("   ✓ Transaction demo completed");
+                            Console.WriteLine("   ✓ Transaction demo completed");
+                        }
+                        catch (Exception ex)
+                        {
+                            session.Rollback();
+                            Console.WriteLine($"   ⚠️  Transaction rolled back: {ex.Message}");
+                        }
                     }
                 }
                 catch (Exception ex)
