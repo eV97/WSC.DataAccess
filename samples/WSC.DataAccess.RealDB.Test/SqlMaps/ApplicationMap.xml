@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Application">
+
+  <!--
+    NOTE: Đây là SQL maps mẫu cho database LP_ApplicationSystem.
+    Bạn cần điều chỉnh table name và column names theo cấu trúc thực tế của database.
+
+    Các bước customize:
+    1. Chạy test để xem danh sách tables
+    2. Thay đổi table name trong SQL
+    3. Thay đổi column names cho phù hợp
+    4. Adjust model class (Models/Application.cs)
+  -->
+
+  <!-- Get all applications -->
+  <select id="Application.GetAll" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    SELECT TOP 100
+      Id,
+      ApplicationName,
+      Description,
+      Version,
+      CreatedDate,
+      UpdatedDate,
+      IsActive
+    FROM Applications
+    WHERE IsActive = 1
+    ORDER BY ApplicationName
+  </select>
+
+  <!-- Get application by ID -->
+  <select id="Application.GetById" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    SELECT
+      Id,
+      ApplicationName,
+      Description,
+      Version,
+      CreatedDate,
+      UpdatedDate,
+      IsActive
+    FROM Applications
+    WHERE Id = @Id
+  </select>
+
+  <!-- Search applications by name -->
+  <select id="Application.SearchByName" resultType="WSC.DataAccess.RealDB.Test.Models.Application">
+    SELECT
+      Id,
+      ApplicationName,
+      Description,
+      Version,
+      CreatedDate,
+      UpdatedDate,
+      IsActive
+    FROM Applications
+    WHERE ApplicationName LIKE @SearchTerm
+      AND IsActive = 1
+    ORDER BY ApplicationName
+  </select>
+
+  <!-- Insert new application -->
+  <insert id="Application.Insert">
+    INSERT INTO Applications (
+      ApplicationName,
+      Description,
+      Version,
+      CreatedDate,
+      IsActive
+    )
+    VALUES (
+      @ApplicationName,
+      @Description,
+      @Version,
+      GETDATE(),
+      1
+    )
+  </insert>
+
+  <!-- Update application -->
+  <update id="Application.Update">
+    UPDATE Applications
+    SET
+      ApplicationName = @ApplicationName,
+      Description = @Description,
+      Version = @Version,
+      UpdatedDate = GETDATE()
+    WHERE Id = @Id
+  </update>
+
+  <!-- Soft delete -->
+  <update id="Application.Delete">
+    UPDATE Applications
+    SET IsActive = 0, UpdatedDate = GETDATE()
+    WHERE Id = @Id
+  </update>
+
+  <!-- Get active count -->
+  <select id="Application.GetActiveCount" resultType="System.Int32">
+    SELECT COUNT(*)
+    FROM Applications
+    WHERE IsActive = 1
+  </select>
+
+</sqlMap>
