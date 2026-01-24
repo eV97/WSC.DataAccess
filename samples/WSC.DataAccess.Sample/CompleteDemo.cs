@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WSC.DataAccess.Configuration;
-using WSC.DataAccess.Constants;
+using WSC.DataAccess.Sample.Models;
 using WSC.DataAccess.Sample.Repositories;
 
 namespace WSC.DataAccess.Sample;
@@ -52,28 +52,28 @@ public class CompleteDemo
                 Console.WriteLine("--------------------------------------------");
 
                 // DAO000 - System queries
-                provider.AddFile(DaoNames.DAO000, SqlMapFiles.DAO000, "System & Configuration");
-                Console.WriteLine($"  ✅ {DaoNames.DAO000} -> {SqlMapFiles.DAO000}");
+                provider.AddFile(Provider.DAO000, SqlMaps/DAO000.xml, "System & Configuration");
+                Console.WriteLine($"  ✅ {Provider.DAO000} -> {SqlMaps/DAO000.xml}");
 
                 // DAO001 - User management
-                provider.AddFile(DaoNames.DAO001, SqlMapFiles.DAO001, "User Management");
-                Console.WriteLine($"  ✅ {DaoNames.DAO001} -> {SqlMapFiles.DAO001}");
+                provider.AddFile(Provider.DAO001, SqlMaps/DAO001.xml, "User Management");
+                Console.WriteLine($"  ✅ {Provider.DAO001} -> {SqlMaps/DAO001.xml}");
 
                 // DAO002 - Product management
-                provider.AddFile(DaoNames.DAO002, SqlMapFiles.DAO002, "Product Management");
-                Console.WriteLine($"  ✅ {DaoNames.DAO002} -> {SqlMapFiles.DAO002}");
+                provider.AddFile(Provider.DAO002, SqlMaps/DAO002.xml, "Product Management");
+                Console.WriteLine($"  ✅ {Provider.DAO002} -> {SqlMaps/DAO002.xml}");
 
                 // DAO003 - Order management
-                provider.AddFile(DaoNames.DAO003, SqlMapFiles.DAO003, "Order Management");
-                Console.WriteLine($"  ✅ {DaoNames.DAO003} -> {SqlMapFiles.DAO003}");
+                provider.AddFile(Provider.DAO003, SqlMaps/DAO003.xml, "Order Management");
+                Console.WriteLine($"  ✅ {Provider.DAO003} -> {SqlMaps/DAO003.xml}");
 
                 // DAO004 - Category management
-                provider.AddFile(DaoNames.DAO004, SqlMapFiles.DAO004, "Category Management");
-                Console.WriteLine($"  ✅ {DaoNames.DAO004} -> {SqlMapFiles.DAO004}");
+                provider.AddFile(Provider.DAO004, SqlMaps/DAO004.xml, "Category Management");
+                Console.WriteLine($"  ✅ {Provider.DAO004} -> {SqlMaps/DAO004.xml}");
 
                 // DAO005 - Reports & Analytics
-                provider.AddFile(DaoNames.DAO005, SqlMapFiles.DAO005, "Reports & Analytics");
-                Console.WriteLine($"  ✅ {DaoNames.DAO005} -> {SqlMapFiles.DAO005}");
+                provider.AddFile(Provider.DAO005, SqlMaps/DAO005.xml, "Reports & Analytics");
+                Console.WriteLine($"  ✅ {Provider.DAO005} -> {SqlMaps/DAO005.xml}");
 
                 Console.WriteLine();
             });
@@ -241,7 +241,7 @@ public class CompleteDemo
 
                 foreach (var file in provider.Files)
                 {
-                    var exists = SqlMapFiles.Exists(file.FilePath);
+                    var exists = File.Exists(file.FilePath);
                     var status = exists ? "✅" : "❌";
                     Console.WriteLine($"    {status} {file.Key} -> {file.FilePath}");
                     if (!string.IsNullOrEmpty(file.Description))
@@ -272,7 +272,7 @@ public class CompleteDemo
 
                 Console.WriteLine("💡 Features Demonstrated:");
                 Console.WriteLine("--------------------------------------------");
-                Console.WriteLine("  1. DAO Constants (DaoNames.DAO000 - DAO005)");
+                Console.WriteLine("  1. DAO Constants (Provider.DAO000 - DAO005)");
                 Console.WriteLine("  2. Provider Pattern (Centralized SQL map registration)");
                 Console.WriteLine("  3. Repository Pattern (Clean, testable code)");
                 Console.WriteLine("  4. Logging Integration (IBatis logging to file)");
