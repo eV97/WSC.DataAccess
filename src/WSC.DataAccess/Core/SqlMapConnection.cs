@@ -4,17 +4,17 @@ using WSC.DataAccess.Mapping;
 namespace WSC.DataAccess.Core;
 
 /// <summary>
-/// SQL Connection - wraps IDbConnection with SQL map context
+/// SQL Map Connection - wraps IDbConnection with SQL map context
 /// Allows statement execution using SQL map statement IDs
 /// </summary>
-public class SqlConnection : ISqlConnection
+public class SqlMapConnection : ISqlMapConnection
 {
     private readonly IDbConnection _innerConnection;
     private readonly SqlMapConfig _sqlMapConfig;
     private readonly string? _daoName;
     private readonly string _connectionName;
 
-    public SqlConnection(
+    public SqlMapConnection(
         IDbConnection innerConnection,
         SqlMapConfig sqlMapConfig,
         string? daoName = null,
