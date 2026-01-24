@@ -120,7 +120,7 @@ public class SqlService : ISql
         var rawConnection = session.Connection;
 
         // Wrap with SQL map context
-        var sqlConnection = new SqlConnection(
+        var sqlConnection = new SqlMapConnection(
             rawConnection,
             sqlMapConfig,
             currentDao,

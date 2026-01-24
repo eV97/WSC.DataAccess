@@ -38,11 +38,8 @@ public static class SqlConnectionExtensions
                 $"Check your SQL map file.");
         }
 
-        // Parse parameters in SQL
-        var sql = SqlParameterParser.Parse(statement.Sql, parameters, out var parsedParams);
-
-        // Execute using Dapper
-        return await connection.InnerConnection.QueryAsync<T>(sql, parsedParams);
+        // Execute using Dapper (Dapper handles parameter parsing)
+        return await connection.InnerConnection.QueryAsync<T>(statement.CommandText, parameters);
     }
 
     /// <summary>
@@ -71,9 +68,7 @@ public static class SqlConnectionExtensions
                 $"Statement '{statementId}' not found in SQL map for DAO '{connection.DaoName}'");
         }
 
-        var sql = SqlParameterParser.Parse(statement.Sql, parameters, out var parsedParams);
-
-        return await connection.InnerConnection.QuerySingleOrDefaultAsync<T>(sql, parsedParams);
+        return await connection.InnerConnection.QuerySingleOrDefaultAsync<T>(statement.CommandText, parameters);
     }
 
     /// <summary>
@@ -102,9 +97,7 @@ public static class SqlConnectionExtensions
                 $"Statement '{statementId}' not found in SQL map for DAO '{connection.DaoName}'");
         }
 
-        var sql = SqlParameterParser.Parse(statement.Sql, parameters, out var parsedParams);
-
-        return await connection.InnerConnection.ExecuteScalarAsync<T>(sql, parsedParams);
+        return await connection.InnerConnection.ExecuteScalarAsync<T>(statement.CommandText, parameters);
     }
 
     /// <summary>
@@ -132,9 +125,7 @@ public static class SqlConnectionExtensions
                 $"Statement '{statementId}' not found in SQL map for DAO '{connection.DaoName}'");
         }
 
-        var sql = SqlParameterParser.Parse(statement.Sql, parameters, out var parsedParams);
-
-        return await connection.InnerConnection.ExecuteAsync(sql, parsedParams);
+        return await connection.InnerConnection.ExecuteAsync(statement.CommandText, parameters);
     }
 
     /// <summary>
@@ -163,9 +154,7 @@ public static class SqlConnectionExtensions
                 $"Statement '{statementId}' not found in SQL map for DAO '{connection.DaoName}'");
         }
 
-        var sql = SqlParameterParser.Parse(statement.Sql, parameters, out var parsedParams);
-
-        return await connection.InnerConnection.QueryFirstOrDefaultAsync<T>(sql, parsedParams);
+        return await connection.InnerConnection.QueryFirstOrDefaultAsync<T>(statement.CommandText, parameters);
     }
 
     /// <summary>
