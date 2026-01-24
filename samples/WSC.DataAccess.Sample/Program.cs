@@ -39,10 +39,30 @@ services.AddLogging(builder =>
 // WSC.DataAccess with ISql Pattern - Auto-load connection strings from configuration
 services.AddWscDataAccess(configuration, options =>
 {
+    Console.WriteLine("📋 Registering Connection Strings:");
+
+    // Register additional named connections
+    if (!string.IsNullOrEmpty(hisConnection))
+    {
+        options.AddConnection("HIS", hisConnection);
+        Console.WriteLine("  ✅ HIS Connection registered");
+    }
+
+    if (!string.IsNullOrEmpty(lisConnection))
+    {
+        options.AddConnection("LIS", lisConnection);
+        Console.WriteLine("  ✅ LIS Connection registered");
+    }
+
+    Console.WriteLine();
     Console.WriteLine("📋 Auto-discovering SQL Map DAOs from 'SqlMaps' directory...");
 
-    // Auto-discover tất cả .xml files trong thư mục SqlMaps
+    // Auto-discover SQL maps for Default connection
     options.AutoDiscoverSqlMaps("SqlMaps");
+
+    // Hoặc có thể chỉ định connection cụ thể cho từng thư mục:
+    // options.AutoDiscoverSqlMaps("SqlMaps/HIS", "HIS");
+    // options.AutoDiscoverSqlMaps("SqlMaps/LIS", "LIS");
 
     var daoCount = options.SqlMapProvider.Files.Count;
     Console.WriteLine($"  ✅ {daoCount} DAOs auto-registered");
@@ -51,7 +71,7 @@ services.AddWscDataAccess(configuration, options =>
     foreach (var registration in options.SqlMapProvider.Files)
     {
         var description = Provider.GetDescription(registration.Key);
-        Console.WriteLine($"     - {registration.Key}: {description}");
+        Console.WriteLine($"     - {registration.Key} ({registration.ConnectionName}): {description}");
     }
 });
 
