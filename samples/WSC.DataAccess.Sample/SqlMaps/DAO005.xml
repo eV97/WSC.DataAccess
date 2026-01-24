@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Report">
+  <!--
+    DAO005: Analytics & Reporting Queries
+    Purpose: Business intelligence, reports, statistics
+  -->
+
+  <!-- Get sales summary -->
+  <select id="GetSalesSummary">
+    <![CDATA[
+      SELECT
+        COUNT(*) AS TotalOrders,
+        ISNULL(SUM(TotalAmount), 0) AS TotalSales,
+        ISNULL(AVG(TotalAmount), 0) AS AverageSales,
+        ISNULL(MAX(TotalAmount), 0) AS MaxSale,
+        ISNULL(MIN(TotalAmount), 0) AS MinSale
+      FROM Orders
+      WHERE Status = 'Completed'
+    ]]>
+  </select>
+
+  <!-- Get sales by date -->
+  <select id="GetSalesByDate">
+    <![CDATA[
+      SELECT
+        CAST(OrderDate AS DATE) AS SaleDate,
+        COUNT(*) AS OrderCount,
+        SUM(TotalAmount) AS TotalSales
+      FROM Orders
+      WHERE Status = 'Completed'
+      GROUP BY CAST(OrderDate AS DATE)
+      ORDER BY SaleDate DESC
+    ]]>
+  </select>
+
+  <!-- Get sales by month -->
+  <select id="GetSalesByMonth">
+    <![CDATA[
+      SELECT
+        YEAR(OrderDate) AS Year,
+        MONTH(OrderDate) AS Month,
+        COUNT(*) AS OrderCount,
+        SUM(TotalAmount) AS TotalSales
+      FROM Orders
+      WHERE Status = 'Completed'
+      GROUP BY YEAR(OrderDate), MONTH(OrderDate)
+      ORDER BY Year DESC, Month DESC
+    ]]>
+  </select>
+
+  <!-- Get top customers -->
+  <select id="GetTopCustomers">
+    <![CDATA[
+      SELECT TOP (@Limit)
+        u.Id AS UserId,
+        u.Username,
+        u.Email,
+        u.FullName,
+        COUNT(o.Id) AS OrderCount,
+        SUM(o.TotalAmount) AS TotalSpent
+      FROM Users u
+      INNER JOIN Orders o ON u.Id = o.UserId
+      WHERE o.Status = 'Completed'
+      GROUP BY u.Id, u.Username, u.Email, u.FullName
+      ORDER BY TotalSpent DESC
+    ]]>
+  </select>
+
+  <!-- Get top products -->
+  <select id="GetTopProducts">
+    <![CDATA[
+      SELECT TOP (@Limit)
+        p.Id AS ProductId,
+        p.ProductCode,
+        p.ProductName,
+        COUNT(oi.Id) AS SalesCount,
+        SUM(oi.Quantity) AS TotalQuantity,
+        SUM(oi.Subtotal) AS TotalRevenue
+      FROM Products p
+      INNER JOIN OrderItems oi ON p.Id = oi.ProductId
+      INNER JOIN Orders o ON oi.OrderId = o.Id
+      WHERE o.Status = 'Completed'
+      GROUP BY p.Id, p.ProductCode, p.ProductName
+      ORDER BY TotalRevenue DESC
+    ]]>
+  </select>
+
+  <!-- Get inventory summary -->
+  <select id="GetInventorySummary">
+    <![CDATA[
+      SELECT
+        COUNT(*) AS TotalProducts,
+        SUM(StockQuantity) AS TotalStock,
+        SUM(CASE WHEN StockQuantity = 0 THEN 1 ELSE 0 END) AS OutOfStockCount,
+        SUM(CASE WHEN StockQuantity > 0 THEN 1 ELSE 0 END) AS InStockCount,
+        SUM(Price * StockQuantity) AS TotalInventoryValue
+      FROM Products
+      WHERE IsActive = 1
+    ]]>
+  </select>
+
+  <!-- Get user statistics -->
+  <select id="GetUserStatistics">
+    <![CDATA[
+      SELECT
+        COUNT(*) AS TotalUsers,
+        SUM(CASE WHEN IsActive = 1 THEN 1 ELSE 0 END) AS ActiveUsers,
+        SUM(CASE WHEN IsActive = 0 THEN 1 ELSE 0 END) AS InactiveUsers
+      FROM Users
+    ]]>
+  </select>
+
+  <!-- Get order statistics -->
+  <select id="GetOrderStatistics">
+    <![CDATA[
+      SELECT
+        COUNT(*) AS TotalOrders,
+        SUM(CASE WHEN Status = 'Pending' THEN 1 ELSE 0 END) AS PendingOrders,
+        SUM(CASE WHEN Status = 'Processing' THEN 1 ELSE 0 END) AS ProcessingOrders,
+        SUM(CASE WHEN Status = 'Completed' THEN 1 ELSE 0 END) AS CompletedOrders,
+        SUM(CASE WHEN Status = 'Cancelled' THEN 1 ELSE 0 END) AS CancelledOrders
+      FROM Orders
+    ]]>
+  </select>
+
+  <!-- Get revenue by category -->
+  <select id="GetRevenueByCategory">
+    <![CDATA[
+      SELECT
+        c.Id AS CategoryId,
+        c.CategoryName,
+        COUNT(DISTINCT oi.OrderId) AS OrderCount,
+        SUM(oi.Quantity) AS TotalQuantity,
+        SUM(oi.Subtotal) AS TotalRevenue
+      FROM Categories c
+      INNER JOIN Products p ON c.Id = p.CategoryId
+      INNER JOIN OrderItems oi ON p.Id = oi.ProductId
+      INNER JOIN Orders o ON oi.OrderId = o.Id
+      WHERE o.Status = 'Completed'
+      GROUP BY c.Id, c.CategoryName
+      ORDER BY TotalRevenue DESC
+    ]]>
+  </select>
+
+  <!-- Get daily sales report -->
+  <select id="GetDailySalesReport">
+    <![CDATA[
+      SELECT
+        CAST(OrderDate AS DATE) AS SaleDate,
+        COUNT(*) AS OrderCount,
+        SUM(TotalAmount) AS TotalSales,
+        AVG(TotalAmount) AS AverageSale
+      FROM Orders
+      WHERE Status = 'Completed'
+        AND OrderDate >= @FromDate
+        AND OrderDate <= @ToDate
+      GROUP BY CAST(OrderDate AS DATE)
+      ORDER BY SaleDate DESC
+    ]]>
+  </select>
+
+  <!-- Get monthly sales comparison -->
+  <select id="GetMonthlySalesComparison">
+    <![CDATA[
+      SELECT
+        YEAR(OrderDate) AS Year,
+        MONTH(OrderDate) AS Month,
+        DATENAME(MONTH, OrderDate) AS MonthName,
+        COUNT(*) AS OrderCount,
+        SUM(TotalAmount) AS TotalSales,
+        AVG(TotalAmount) AS AverageSale
+      FROM Orders
+      WHERE Status = 'Completed'
+      GROUP BY YEAR(OrderDate), MONTH(OrderDate), DATENAME(MONTH, OrderDate)
+      ORDER BY Year DESC, Month DESC
+    ]]>
+  </select>
+
+  <!-- Get product performance -->
+  <select id="GetProductPerformance">
+    <![CDATA[
+      SELECT
+        p.Id,
+        p.ProductCode,
+        p.ProductName,
+        p.Price,
+        p.StockQuantity,
+        ISNULL(SUM(oi.Quantity), 0) AS TotalSold,
+        ISNULL(SUM(oi.Subtotal), 0) AS TotalRevenue,
+        ISNULL(COUNT(DISTINCT oi.OrderId), 0) AS OrderCount
+      FROM Products p
+      LEFT JOIN OrderItems oi ON p.Id = oi.ProductId
+      LEFT JOIN Orders o ON oi.OrderId = o.Id AND o.Status = 'Completed'
+      WHERE p.IsActive = 1
+      GROUP BY p.Id, p.ProductCode, p.ProductName, p.Price, p.StockQuantity
+      ORDER BY TotalRevenue DESC
+    ]]>
+  </select>
+
+  <!-- Get customer lifetime value -->
+  <select id="GetCustomerLifetimeValue">
+    <![CDATA[
+      SELECT
+        u.Id AS UserId,
+        u.Username,
+        u.Email,
+        u.FullName,
+        COUNT(o.Id) AS TotalOrders,
+        SUM(o.TotalAmount) AS LifetimeValue,
+        AVG(o.TotalAmount) AS AverageOrderValue,
+        MIN(o.OrderDate) AS FirstOrderDate,
+        MAX(o.OrderDate) AS LastOrderDate,
+        DATEDIFF(DAY, MIN(o.OrderDate), MAX(o.OrderDate)) AS CustomerDays
+      FROM Users u
+      INNER JOIN Orders o ON u.Id = o.UserId
+      WHERE o.Status = 'Completed'
+      GROUP BY u.Id, u.Username, u.Email, u.FullName
+      ORDER BY LifetimeValue DESC
+    ]]>
+  </select>
+</sqlMap>

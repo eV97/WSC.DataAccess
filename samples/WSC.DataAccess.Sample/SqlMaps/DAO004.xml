@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Category">
+  <!--
+    DAO004: Category Management Queries
+    Purpose: Category CRUD operations, product categories
+  -->
+
+  <!-- Get all categories -->
+  <select id="GetAllCategories">
+    <![CDATA[
+      SELECT
+        Id,
+        CategoryName,
+        Description,
+        ParentCategoryId,
+        IsActive,
+        DisplayOrder,
+        CreatedAt,
+        UpdatedAt
+      FROM Categories
+      ORDER BY DisplayOrder, CategoryName
+    ]]>
+  </select>
+
+  <!-- Get category by ID -->
+  <select id="GetCategoryById">
+    <![CDATA[
+      SELECT
+        Id,
+        CategoryName,
+        Description,
+        ParentCategoryId,
+        IsActive,
+        DisplayOrder,
+        CreatedAt,
+        UpdatedAt
+      FROM Categories
+      WHERE Id = @Id
+    ]]>
+  </select>
+
+  <!-- Get active categories -->
+  <select id="GetActiveCategories">
+    <![CDATA[
+      SELECT
+        Id,
+        CategoryName,
+        Description,
+        ParentCategoryId,
+        IsActive,
+        DisplayOrder,
+        CreatedAt,
+        UpdatedAt
+      FROM Categories
+      WHERE IsActive = 1
+      ORDER BY DisplayOrder, CategoryName
+    ]]>
+  </select>
+
+  <!-- Get root categories (no parent) -->
+  <select id="GetRootCategories">
+    <![CDATA[
+      SELECT
+        Id,
+        CategoryName,
+        Description,
+        ParentCategoryId,
+        IsActive,
+        DisplayOrder,
+        CreatedAt,
+        UpdatedAt
+      FROM Categories
+      WHERE ParentCategoryId IS NULL
+      ORDER BY DisplayOrder, CategoryName
+    ]]>
+  </select>
+
+  <!-- Get sub-categories by parent ID -->
+  <select id="GetSubCategories">
+    <![CDATA[
+      SELECT
+        Id,
+        CategoryName,
+        Description,
+        ParentCategoryId,
+        IsActive,
+        DisplayOrder,
+        CreatedAt,
+        UpdatedAt
+      FROM Categories
+      WHERE ParentCategoryId = @ParentCategoryId
+      ORDER BY DisplayOrder, CategoryName
+    ]]>
+  </select>
+
+  <!-- Get category count -->
+  <select id="GetCategoryCount" resultClass="int">
+    <![CDATA[
+      SELECT COUNT(*) FROM Categories
+    ]]>
+  </select>
+
+  <!-- Get product count by category -->
+  <select id="GetProductCountByCategory" resultClass="int">
+    <![CDATA[
+      SELECT COUNT(*)
+      FROM Products
+      WHERE CategoryId = @CategoryId AND IsActive = 1
+    ]]>
+  </select>
+
+  <!-- Insert category -->
+  <insert id="InsertCategory">
+    <![CDATA[
+      INSERT INTO Categories (CategoryName, Description, ParentCategoryId, IsActive, DisplayOrder, CreatedAt)
+      VALUES (@CategoryName, @Description, @ParentCategoryId, @IsActive, @DisplayOrder, GETDATE())
+
+      SELECT CAST(SCOPE_IDENTITY() AS INT)
+    ]]>
+  </insert>
+
+  <!-- Update category -->
+  <update id="UpdateCategory">
+    <![CDATA[
+      UPDATE Categories
+      SET
+        CategoryName = @CategoryName,
+        Description = @Description,
+        ParentCategoryId = @ParentCategoryId,
+        IsActive = @IsActive,
+        DisplayOrder = @DisplayOrder,
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Update display order -->
+  <update id="UpdateDisplayOrder">
+    <![CDATA[
+      UPDATE Categories
+      SET
+        DisplayOrder = @DisplayOrder,
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Delete category -->
+  <delete id="DeleteCategory">
+    <![CDATA[
+      DELETE FROM Categories WHERE Id = @Id
+    ]]>
+  </delete>
+
+  <!-- Deactivate category -->
+  <update id="DeactivateCategory">
+    <![CDATA[
+      UPDATE Categories
+      SET IsActive = 0, UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Activate category -->
+  <update id="ActivateCategory">
+    <![CDATA[
+      UPDATE Categories
+      SET IsActive = 1, UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Check if category has products -->
+  <select id="HasProducts" resultClass="bool">
+    <![CDATA[
+      SELECT CASE WHEN EXISTS(
+        SELECT 1 FROM Products WHERE CategoryId = @CategoryId
+      )
+      THEN CAST(1 AS BIT)
+      ELSE CAST(0 AS BIT)
+      END
+    ]]>
+  </select>
+
+  <!-- Check if category has sub-categories -->
+  <select id="HasSubCategories" resultClass="bool">
+    <![CDATA[
+      SELECT CASE WHEN EXISTS(
+        SELECT 1 FROM Categories WHERE ParentCategoryId = @CategoryId
+      )
+      THEN CAST(1 AS BIT)
+      ELSE CAST(0 AS BIT)
+      END
+    ]]>
+  </select>
+</sqlMap>

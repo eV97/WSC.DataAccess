@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="System">
+  <!--
+    DAO000: System & Configuration Queries
+    Purpose: System information, configuration, database metadata
+  -->
+
+  <!-- Get database version -->
+  <select id="GetDatabaseVersion" resultClass="string">
+    <![CDATA[
+      SELECT @@VERSION
+    ]]>
+  </select>
+
+  <!-- Get current database name -->
+  <select id="GetCurrentDatabase" resultClass="string">
+    <![CDATA[
+      SELECT DB_NAME()
+    ]]>
+  </select>
+
+  <!-- Get current user -->
+  <select id="GetCurrentUser" resultClass="string">
+    <![CDATA[
+      SELECT SYSTEM_USER
+    ]]>
+  </select>
+
+  <!-- Get server name -->
+  <select id="GetServerName" resultClass="string">
+    <![CDATA[
+      SELECT @@SERVERNAME
+    ]]>
+  </select>
+
+  <!-- Get current date time -->
+  <select id="GetCurrentDateTime" resultClass="DateTime">
+    <![CDATA[
+      SELECT GETDATE()
+    ]]>
+  </select>
+
+  <!-- Simple test query -->
+  <select id="TestQuery" resultClass="int">
+    <![CDATA[
+      SELECT 1
+    ]]>
+  </select>
+
+  <!-- Get database size -->
+  <select id="GetDatabaseSize">
+    <![CDATA[
+      SELECT
+        DB_NAME() AS DatabaseName,
+        SUM(size * 8 / 1024.0) AS SizeMB
+      FROM sys.database_files
+      GROUP BY DB_NAME()
+    ]]>
+  </select>
+
+  <!-- List all tables -->
+  <select id="ListAllTables">
+    <![CDATA[
+      SELECT
+        TABLE_SCHEMA AS SchemaName,
+        TABLE_NAME AS TableName,
+        TABLE_TYPE AS TableType
+      FROM INFORMATION_SCHEMA.TABLES
+      WHERE TABLE_TYPE = 'BASE TABLE'
+      ORDER BY TABLE_SCHEMA, TABLE_NAME
+    ]]>
+  </select>
+
+  <!-- Get table count -->
+  <select id="GetTableCount" resultClass="int">
+    <![CDATA[
+      SELECT COUNT(*)
+      FROM INFORMATION_SCHEMA.TABLES
+      WHERE TABLE_TYPE = 'BASE TABLE'
+    ]]>
+  </select>
+
+  <!-- Get connection count -->
+  <select id="GetConnectionCount" resultClass="int">
+    <![CDATA[
+      SELECT COUNT(*)
+      FROM sys.dm_exec_sessions
+      WHERE is_user_process = 1
+    ]]>
+  </select>
+</sqlMap>

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Order">
+  <!--
+    DAO003: Order Management Queries
+    Purpose: Order CRUD operations, order processing, order history
+  -->
+
+  <!-- Get all orders -->
+  <select id="GetAllOrders">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      ORDER BY OrderDate DESC
+    ]]>
+  </select>
+
+  <!-- Get order by ID -->
+  <select id="GetOrderById">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      WHERE Id = @Id
+    ]]>
+  </select>
+
+  <!-- Get order by order number -->
+  <select id="GetOrderByOrderNumber">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      WHERE OrderNumber = @OrderNumber
+    ]]>
+  </select>
+
+  <!-- Get orders by user ID -->
+  <select id="GetOrdersByUserId">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      WHERE UserId = @UserId
+      ORDER BY OrderDate DESC
+    ]]>
+  </select>
+
+  <!-- Get orders by status -->
+  <select id="GetOrdersByStatus">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      WHERE Status = @Status
+      ORDER BY OrderDate DESC
+    ]]>
+  </select>
+
+  <!-- Get pending orders -->
+  <select id="GetPendingOrders">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      WHERE Status = 'Pending'
+      ORDER BY OrderDate DESC
+    ]]>
+  </select>
+
+  <!-- Get completed orders -->
+  <select id="GetCompletedOrders">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      WHERE Status = 'Completed'
+      ORDER BY OrderDate DESC
+    ]]>
+  </select>
+
+  <!-- Get orders by date range -->
+  <select id="GetOrdersByDateRange">
+    <![CDATA[
+      SELECT
+        Id,
+        OrderNumber,
+        UserId,
+        OrderDate,
+        TotalAmount,
+        Status,
+        PaymentMethod,
+        ShippingAddress,
+        CreatedAt,
+        UpdatedAt
+      FROM Orders
+      WHERE OrderDate >= @FromDate AND OrderDate <= @ToDate
+      ORDER BY OrderDate DESC
+    ]]>
+  </select>
+
+  <!-- Get order count -->
+  <select id="GetOrderCount" resultClass="int">
+    <![CDATA[
+      SELECT COUNT(*) FROM Orders
+    ]]>
+  </select>
+
+  <!-- Get total sales -->
+  <select id="GetTotalSales" resultClass="decimal">
+    <![CDATA[
+      SELECT ISNULL(SUM(TotalAmount), 0)
+      FROM Orders
+      WHERE Status = 'Completed'
+    ]]>
+  </select>
+
+  <!-- Get total sales by date range -->
+  <select id="GetTotalSalesByDateRange" resultClass="decimal">
+    <![CDATA[
+      SELECT ISNULL(SUM(TotalAmount), 0)
+      FROM Orders
+      WHERE Status = 'Completed'
+        AND OrderDate >= @FromDate
+        AND OrderDate <= @ToDate
+    ]]>
+  </select>
+
+  <!-- Insert order -->
+  <insert id="InsertOrder">
+    <![CDATA[
+      INSERT INTO Orders (OrderNumber, UserId, OrderDate, TotalAmount, Status, PaymentMethod, ShippingAddress, CreatedAt)
+      VALUES (@OrderNumber, @UserId, @OrderDate, @TotalAmount, @Status, @PaymentMethod, @ShippingAddress, GETDATE())
+
+      SELECT CAST(SCOPE_IDENTITY() AS INT)
+    ]]>
+  </insert>
+
+  <!-- Update order -->
+  <update id="UpdateOrder">
+    <![CDATA[
+      UPDATE Orders
+      SET
+        TotalAmount = @TotalAmount,
+        Status = @Status,
+        PaymentMethod = @PaymentMethod,
+        ShippingAddress = @ShippingAddress,
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Update order status -->
+  <update id="UpdateOrderStatus">
+    <![CDATA[
+      UPDATE Orders
+      SET
+        Status = @Status,
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Delete order -->
+  <delete id="DeleteOrder">
+    <![CDATA[
+      DELETE FROM Orders WHERE Id = @Id
+    ]]>
+  </delete>
+
+  <!-- Cancel order -->
+  <update id="CancelOrder">
+    <![CDATA[
+      UPDATE Orders
+      SET
+        Status = 'Cancelled',
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+</sqlMap>
