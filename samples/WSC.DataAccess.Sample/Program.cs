@@ -17,8 +17,15 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
-var connectionString = configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"📌 Connection: {(connectionString != null ? connectionString.Substring(0, Math.Min(50, connectionString.Length)) : "null")}...");
+// Display connection strings
+Console.WriteLine("📌 Connection Strings:");
+var connectionStringsSection = configuration.GetSection("ConnectionStrings");
+foreach (var conn in connectionStringsSection.GetChildren())
+{
+    var value = conn.Value ?? "";
+    var displayValue = value.Length > 50 ? value.Substring(0, 50) + "..." : value;
+    Console.WriteLine($"   - {conn.Key}: {displayValue}");
+}
 Console.WriteLine();
 
 // DI Setup
@@ -29,8 +36,8 @@ services.AddLogging(builder =>
     builder.SetMinimumLevel(LogLevel.Information);
 });
 
-// WSC.DataAccess with ISql Pattern - Auto-discovery
-services.AddWscDataAccess(connectionString!, options =>
+// WSC.DataAccess with ISql Pattern - Auto-load connection strings from configuration
+services.AddWscDataAccess(configuration, options =>
 {
     Console.WriteLine("📋 Auto-discovering SQL Map DAOs from 'SqlMaps' directory...");
 

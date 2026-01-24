@@ -12,11 +12,13 @@ namespace WSC.DataAccess.Sample;
 public class TestService
 {
     private readonly ISql _sql;
+    private readonly IDbSessionFactory _sessionFactory;
     private readonly ILogger<TestService> _logger;
 
-    public TestService(ISql sql, ILogger<TestService> logger)
+    public TestService(ISql sql, IDbSessionFactory sessionFactory, ILogger<TestService> logger)
     {
         _sql = sql;
+        _sessionFactory = sessionFactory;
         _logger = logger;
     }
 
@@ -286,6 +288,57 @@ public class TestService
     }
 
     /// <summary>
+    /// Test 8: Named Connections - Test multiple database connections using ISql.CreateConnection
+    /// </summary>
+    public async Task TestNamedConnectionsAsync()
+    {
+        try
+        {
+            _logger.LogInformation("=== TEST 8: Named Connections (ISql API) ===");
+
+            // Set DAO context
+            _sql.GetDAO(Provider.DAO000);
+
+            // Test DefaultConnection (mặc định)
+            _logger.LogInformation("1. Testing DefaultConnection (default)...");
+            using (var connection = _sql.CreateConnection())
+            {
+                var dbName = await connection.StatementExecuteSingleAsync<string>("System.GetCurrentDatabase");
+                _logger.LogInformation("  ✅ Default -> Database: {DbName}", dbName);
+            }
+
+            // Test HISConnection
+            _logger.LogInformation("2. Testing HISConnection...");
+            using (var hisConnection = _sql.CreateConnection("HISConnection"))
+            {
+                var dbName = await hisConnection.StatementExecuteSingleAsync<string>("System.GetCurrentDatabase");
+                _logger.LogInformation("  ✅ HISConnection -> Database: {DbName}", dbName);
+            }
+
+            // Test LISConnection
+            _logger.LogInformation("3. Testing LISConnection...");
+            using (var lisConnection = _sql.CreateConnection("LISConnection"))
+            {
+                var dbName = await lisConnection.StatementExecuteSingleAsync<string>("System.GetCurrentDatabase");
+                _logger.LogInformation("  ✅ LISConnection -> Database: {DbName}", dbName);
+            }
+
+            _logger.LogInformation("");
+            _logger.LogInformation("💡 Usage Example:");
+            _logger.LogInformation("   _sql.GetDAO(Provider.DAO001);");
+            _logger.LogInformation("   using var conn = _sql.CreateConnection(\"HISConnection\");");
+            _logger.LogInformation("   var data = await conn.StatementExecuteQueryAsync<User>(\"User.GetAllUsers\");");
+
+            _logger.LogInformation("✅ TEST 8 PASSED - All named connections working!");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "❌ TEST 8 FAILED");
+            throw;
+        }
+    }
+
+    /// <summary>
     /// Run all tests
     /// </summary>
     public async Task RunAllTestsAsync()
@@ -324,6 +377,10 @@ public class TestService
 
             // Test 6: Transaction
             await TestTransactionAsync();
+            _logger.LogInformation("");
+
+            // Test 8: Named Connections
+            await TestNamedConnectionsAsync();
             _logger.LogInformation("");
 
             _logger.LogInformation("╔══════════════════════════════════════════════════════════════════╗");
