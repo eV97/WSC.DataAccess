@@ -307,26 +307,26 @@ public class TestService
                 _logger.LogInformation("  ✅ Default -> Database: {DbName}", dbName);
             }
 
-            // Test HISConnection
-            _logger.LogInformation("2. Testing HISConnection...");
-            using (var hisConnection = _sql.CreateConnection("HISConnection"))
+            // Test HIS
+            _logger.LogInformation("2. Testing HIS...");
+            using (var hisConnection = _sql.CreateConnection("HIS"))
             {
                 var dbName = await hisConnection.StatementExecuteSingleAsync<string>("System.GetCurrentDatabase");
-                _logger.LogInformation("  ✅ HISConnection -> Database: {DbName}", dbName);
+                _logger.LogInformation("  ✅ HIS -> Database: {DbName}", dbName);
             }
 
-            // Test LISConnection
-            _logger.LogInformation("3. Testing LISConnection...");
-            using (var lisConnection = _sql.CreateConnection("LISConnection"))
+            // Test LIS
+            _logger.LogInformation("3. Testing LIS...");
+            using (var lisConnection = _sql.CreateConnection("LIS"))
             {
                 var dbName = await lisConnection.StatementExecuteSingleAsync<string>("System.GetCurrentDatabase");
-                _logger.LogInformation("  ✅ LISConnection -> Database: {DbName}", dbName);
+                _logger.LogInformation("  ✅ LIS -> Database: {DbName}", dbName);
             }
 
             _logger.LogInformation("");
             _logger.LogInformation("💡 Usage Example:");
             _logger.LogInformation("   _sql.GetDAO(Provider.DAO001);");
-            _logger.LogInformation("   using var conn = _sql.CreateConnection(\"HISConnection\");");
+            _logger.LogInformation("   using var conn = _sql.CreateConnection(\"HIS\");");
             _logger.LogInformation("   var data = await conn.StatementExecuteQueryAsync<User>(\"User.GetAllUsers\");");
 
             _logger.LogInformation("✅ TEST 8 PASSED - All named connections working!");

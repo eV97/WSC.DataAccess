@@ -111,7 +111,13 @@ public static class DataAccessServiceCollectionExtensions
 
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    options.NamedConnectionStrings[name] = value;
+                    // Remove "Connection" suffix if present to make names shorter
+                    // "DefaultConnection" -> "Default", "HISConnection" -> "HIS"
+                    var cleanName = name.EndsWith("Connection", StringComparison.OrdinalIgnoreCase)
+                        ? name.Substring(0, name.Length - "Connection".Length)
+                        : name;
+
+                    options.NamedConnectionStrings[cleanName] = value;
                 }
             }
         }
