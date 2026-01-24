@@ -13,14 +13,14 @@ public interface ISql
     /// Connection is ready to execute SQL map statements
     /// </summary>
     /// <returns>Database connection with statement execution extensions</returns>
-    ISqlConnection CreateConnection();
+    ISqlMapConnection CreateConnection();
 
     /// <summary>
     /// Creates a new database connection for a specific named connection
     /// </summary>
     /// <param name="connectionName">Named connection (e.g., "MainDB", "ReportDB")</param>
     /// <returns>Database connection with statement execution extensions</returns>
-    ISqlConnection CreateConnection(string connectionName);
+    ISqlMapConnection CreateConnection(string connectionName);
 
     /// <summary>
     /// Switches the current DAO context

@@ -5,7 +5,7 @@ using WSC.DataAccess.Mapping;
 namespace WSC.DataAccess.Extensions;
 
 /// <summary>
-/// Extension methods for ISqlConnection to execute SQL map statements
+/// Extension methods for ISqlMapConnection to execute SQL map statements
 /// Provides iBatis.NET style API: connection.StatementExecuteQueryAsync("GetAllAssets")
 /// </summary>
 public static class SqlConnectionExtensions
@@ -19,7 +19,7 @@ public static class SqlConnectionExtensions
     /// <param name="parameters">Query parameters (anonymous object or dictionary)</param>
     /// <returns>List of results</returns>
     public static async Task<IEnumerable<T>> StatementExecuteQueryAsync<T>(
-        this ISqlConnection connection,
+        this ISqlMapConnection connection,
         string statementId,
         object? parameters = null)
     {
@@ -51,7 +51,7 @@ public static class SqlConnectionExtensions
     /// <param name="parameters">Query parameters</param>
     /// <returns>Single result or default(T)</returns>
     public static async Task<T?> StatementExecuteSingleAsync<T>(
-        this ISqlConnection connection,
+        this ISqlMapConnection connection,
         string statementId,
         object? parameters = null)
     {
@@ -80,7 +80,7 @@ public static class SqlConnectionExtensions
     /// <param name="parameters">Query parameters</param>
     /// <returns>Scalar value</returns>
     public static async Task<T> StatementExecuteScalarAsync<T>(
-        this ISqlConnection connection,
+        this ISqlMapConnection connection,
         string statementId,
         object? parameters = null)
     {
@@ -108,7 +108,7 @@ public static class SqlConnectionExtensions
     /// <param name="parameters">Query parameters</param>
     /// <returns>Number of rows affected</returns>
     public static async Task<int> StatementExecuteAsync(
-        this ISqlConnection connection,
+        this ISqlMapConnection connection,
         string statementId,
         object? parameters = null)
     {
@@ -137,7 +137,7 @@ public static class SqlConnectionExtensions
     /// <param name="parameters">Query parameters</param>
     /// <returns>First result or default(T)</returns>
     public static async Task<T?> StatementExecuteFirstAsync<T>(
-        this ISqlConnection connection,
+        this ISqlMapConnection connection,
         string statementId,
         object? parameters = null)
     {
@@ -163,8 +163,8 @@ public static class SqlConnectionExtensions
     /// <param name="connection">SQL connection</param>
     /// <param name="action">Action to execute within transaction</param>
     public static async Task ExecuteInTransactionAsync(
-        this ISqlConnection connection,
-        Func<ISqlConnection, Task> action)
+        this ISqlMapConnection connection,
+        Func<ISqlMapConnection, Task> action)
     {
         if (connection == null)
             throw new ArgumentNullException(nameof(connection));
@@ -194,8 +194,8 @@ public static class SqlConnectionExtensions
     /// <param name="func">Function to execute within transaction</param>
     /// <returns>Transaction result</returns>
     public static async Task<TResult> ExecuteInTransactionAsync<TResult>(
-        this ISqlConnection connection,
-        Func<ISqlConnection, Task<TResult>> func)
+        this ISqlMapConnection connection,
+        Func<ISqlMapConnection, Task<TResult>> func)
     {
         if (connection == null)
             throw new ArgumentNullException(nameof(connection));
