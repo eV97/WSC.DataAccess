@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WSC.DataAccess.Configuration;
@@ -9,10 +10,10 @@ namespace WSC.DataAccess.Sample.Examples;
 // DEMO: Using AddWscDataAccess with Dictionary<string, string>
 // ============================================================================
 // This approach is useful when:
-// - Not using appsettings.json
 // - Connection strings come from database/API/environment variables
-// - Testing scenarios
-// - Dynamic configuration
+// - Testing scenarios with programmatic configuration
+// - Dynamic configuration at runtime
+// - When you need full control over connection string dictionary
 // ============================================================================
 // To run this demo, change the startup object in project settings or
 // comment out the main Program.cs
@@ -27,13 +28,28 @@ public class Program_Dictionary
         Console.WriteLine("╚══════════════════════════════════════════════════════════════════╝");
         Console.WriteLine();
 
-        // Define connection strings in a dictionary
-        var connectionStrings = new Dictionary<string, string>
+        // Load configuration from appsettings.json
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
+
+        // Convert ConnectionStrings section to Dictionary
+        var connectionStrings = new Dictionary<string, string>();
+        var connectionStringsSection = configuration.GetSection("ConnectionStrings");
+        foreach (var conn in connectionStringsSection.GetChildren())
         {
-            ["Default"] = "Server=FHC-VUONGLH3\\SQLEXPRESS02;Database=LP_ApplicationSystem;User Id=admin;Password=admin;TrustServerCertificate=True;MultipleActiveResultSets=true",
-            ["HIS"] = "Server=FHC-VUONGLH3\\SQLEXPRESS02;Database=LP_HIS;User Id=admin;Password=admin;TrustServerCertificate=True;MultipleActiveResultSets=true",
-            ["LIS"] = "Server=FHC-VUONGLH3\\SQLEXPRESS02;Database=LP_LIS;User Id=admin;Password=admin;TrustServerCertificate=True;MultipleActiveResultSets=true"
-        };
+            var value = conn.Value;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                // Remove "Connection" suffix like the framework does
+                var cleanName = conn.Key.EndsWith("Connection", StringComparison.OrdinalIgnoreCase)
+                    ? conn.Key.Substring(0, conn.Key.Length - "Connection".Length)
+                    : conn.Key;
+
+                connectionStrings[cleanName] = value;
+            }
+        }
 
         Console.WriteLine("📌 Connection Strings:");
         foreach (var conn in connectionStrings)
