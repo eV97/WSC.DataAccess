@@ -36,16 +36,26 @@ public static class DataAccessServiceCollectionExtensions
             return sessionFactory;
         });
 
+        // Register SQL map provider (singleton để share across app)
+        services.AddSingleton(options.SqlMapProvider);
+
         // Register SQL map configuration
         services.AddSingleton(sp =>
         {
             var logger = sp.GetRequiredService<ILogger<SqlMapConfig>>();
             var config = new SqlMapConfig(logger);
 
-            // Load SQL map files if configured
+            // Load SQL map files from old way (backward compatibility)
             foreach (var sqlMapFile in options.SqlMapFiles)
             {
                 config.LoadFromXml(sqlMapFile);
+            }
+
+            // Load SQL map files from provider (new way)
+            var provider = sp.GetRequiredService<SqlMapProvider>();
+            foreach (var filePath in provider.GetAllFilePaths())
+            {
+                config.LoadFromXml(filePath);
             }
 
             return config;
@@ -91,6 +101,11 @@ public class DataAccessOptions
     public List<string> SqlMapFiles { get; set; } = new();
 
     /// <summary>
+    /// SQL Map Provider - Khai báo SQL maps như provider
+    /// </summary>
+    public SqlMapProvider SqlMapProvider { get; } = new();
+
+    /// <summary>
     /// Adds a named connection string
     /// </summary>
     public void AddConnection(string name, string connectionString)
@@ -104,5 +119,13 @@ public class DataAccessOptions
     public void AddSqlMapFile(string filePath)
     {
         SqlMapFiles.Add(filePath);
+    }
+
+    /// <summary>
+    /// Configure SQL Map Provider (giống provider pattern trong MrFu.Smartcheck)
+    /// </summary>
+    public void ConfigureSqlMaps(Action<SqlMapProvider> configure)
+    {
+        configure?.Invoke(SqlMapProvider);
     }
 }
