@@ -69,6 +69,9 @@ public static class DataAccessServiceCollectionExtensions
             return new SqlMapper(config, logger);
         });
 
+        // Register SQL service (iBatis.NET style API)
+        services.AddScoped<ISql, SqlService>();
+
         return services;
     }
 

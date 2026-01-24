@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using WSC.DataAccess.Configuration;
-using WSC.DataAccess.Constants;
+using WSC.DataAccess.Sample.Models;
 using WSC.DataAccess.Core;
 using WSC.DataAccess.Repository;
 using WSC.DataAccess.Sample.Models;
@@ -13,7 +13,7 @@ namespace WSC.DataAccess.Sample.Repositories;
 /// </summary>
 public class UserRepository : ProviderBasedRepository<User>
 {
-    private const string DAO_NAME = DaoNames.DAO001;
+    private const string DAO_NAME = Provider.DAO001;
     private readonly ILogger<UserRepository> _logger;
 
     public UserRepository(
