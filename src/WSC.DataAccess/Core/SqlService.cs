@@ -79,7 +79,7 @@ public class SqlService : ISql
     /// <summary>
     /// Creates a new database connection with SQL map capabilities (default connection)
     /// </summary>
-    public ISqlConnection CreateConnection()
+    public ISqlMapConnection CreateConnection()
     {
         return CreateConnection(CurrentConnection);
     }
@@ -87,7 +87,7 @@ public class SqlService : ISql
     /// <summary>
     /// Creates a new database connection for a specific named connection
     /// </summary>
-    public ISqlConnection CreateConnection(string connectionName)
+    public ISqlMapConnection CreateConnection(string connectionName)
     {
         if (string.IsNullOrWhiteSpace(connectionName))
             connectionName = SqlMapProvider.DEFAULT_CONNECTION;
