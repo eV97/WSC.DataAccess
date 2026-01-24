@@ -37,7 +37,7 @@ services.AddLogging(builder =>
 });
 
 // WSC.DataAccess with ISql Pattern - Auto-load connection strings from configuration
-services.AddWscDataAccess(configuration, options =>
+services.AddWscDataAccess(configuration, configure: options =>
 {
     // Connection strings are auto-loaded from appsettings.json
     // DefaultConnection -> Default, HISConnection -> HIS, LISConnection -> LIS
