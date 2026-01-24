@@ -4,10 +4,10 @@ using WSC.DataAccess.Mapping;
 namespace WSC.DataAccess.Core;
 
 /// <summary>
-/// SQL Connection interface - wraps IDbConnection with SQL map context
+/// SQL Map Connection interface - wraps IDbConnection with SQL map context
 /// Provides statement execution methods with SQL map support
 /// </summary>
-public interface ISqlConnection : IDbConnection
+public interface ISqlMapConnection : IDbConnection
 {
     /// <summary>
     /// Gets the SQL map configuration for this connection
