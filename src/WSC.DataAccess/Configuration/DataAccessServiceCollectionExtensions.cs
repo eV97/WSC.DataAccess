@@ -81,27 +81,24 @@ public static class DataAccessServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection</param>
     /// <param name="configuration">Configuration instance to load connection strings from</param>
-    /// <param name="defaultConnectionName">Name of the default connection (default: "DefaultConnection")</param>
+    /// <param name="defaultConnectionName">Name of the default connection after suffix removal (default: "Default", which maps to "DefaultConnection" in appsettings.json)</param>
     /// <param name="configure">Optional configuration action</param>
     /// <returns>The service collection</returns>
     public static IServiceCollection AddWscDataAccess(
         this IServiceCollection services,
         IConfiguration configuration,
-        string defaultConnectionName = "DefaultConnection",
+        string defaultConnectionName = "Default",
         Action<DataAccessOptions>? configure = null)
     {
         if (configuration == null)
             throw new ArgumentNullException(nameof(configuration));
 
-        // Get default connection string
-        var defaultConnectionString = configuration.GetConnectionString(defaultConnectionName);
-        if (string.IsNullOrWhiteSpace(defaultConnectionString))
-            throw new ArgumentException($"Connection string '{defaultConnectionName}' not found in configuration", nameof(defaultConnectionName));
-
         var options = new DataAccessOptions();
 
         // Auto-load all connection strings from configuration
         var connectionStringsSection = configuration.GetSection("ConnectionStrings");
+        string? defaultConnectionString = null;
+
         if (connectionStringsSection != null)
         {
             foreach (var connectionString in connectionStringsSection.GetChildren())
@@ -118,9 +115,19 @@ public static class DataAccessServiceCollectionExtensions
                         : name;
 
                     options.NamedConnectionStrings[cleanName] = value;
+
+                    // Track the default connection string
+                    if (cleanName.Equals(defaultConnectionName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        defaultConnectionString = value;
+                    }
                 }
             }
         }
+
+        // Validate default connection was found
+        if (string.IsNullOrWhiteSpace(defaultConnectionString))
+            throw new ArgumentException($"Connection string '{defaultConnectionName}' not found in configuration (looking for '{defaultConnectionName}Connection' or '{defaultConnectionName}')", nameof(defaultConnectionName));
 
         // Allow user to override or add more options
         configure?.Invoke(options);
@@ -263,13 +270,13 @@ public static class DataAccessServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection</param>
     /// <param name="connectionStringsSection">Configuration section containing connection strings (e.g., configuration.GetSection("ConnectionStrings"))</param>
-    /// <param name="defaultConnectionName">Name of the default connection (default: "DefaultConnection")</param>
+    /// <param name="defaultConnectionName">Name of the default connection after suffix removal (default: "Default", which maps to "DefaultConnection" in config)</param>
     /// <param name="configure">Optional configuration action</param>
     /// <returns>The service collection</returns>
     public static IServiceCollection AddWscDataAccess(
         this IServiceCollection services,
         IConfigurationSection connectionStringsSection,
-        string defaultConnectionName = "DefaultConnection",
+        string defaultConnectionName = "Default",
         Action<DataAccessOptions>? configure = null)
     {
         if (connectionStringsSection == null)
@@ -297,13 +304,8 @@ public static class DataAccessServiceCollectionExtensions
         if (connectionStrings.Count == 0)
             throw new ArgumentException("Configuration section does not contain any connection strings", nameof(connectionStringsSection));
 
-        // Clean up default connection name
-        var cleanDefaultName = defaultConnectionName.EndsWith("Connection", StringComparison.OrdinalIgnoreCase)
-            ? defaultConnectionName.Substring(0, defaultConnectionName.Length - "Connection".Length)
-            : defaultConnectionName;
-
-        if (!connectionStrings.TryGetValue(cleanDefaultName, out var defaultConnectionString))
-            throw new ArgumentException($"Default connection '{defaultConnectionName}' not found in configuration section", nameof(defaultConnectionName));
+        if (!connectionStrings.TryGetValue(defaultConnectionName, out var defaultConnectionString))
+            throw new ArgumentException($"Default connection '{defaultConnectionName}' not found in configuration section (looking for '{defaultConnectionName}Connection' or '{defaultConnectionName}')", nameof(defaultConnectionName));
 
         var options = new DataAccessOptions();
 
