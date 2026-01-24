@@ -42,7 +42,7 @@ public class TestService
 
             foreach (var user in users.Take(5))
             {
-                _logger.LogInformation("  - User: {Name} ({Email})", user.Name, user.Email);
+                _logger.LogInformation("  - User: {FullName} ({Email})", user.FullName, user.Email);
             }
 
             _logger.LogInformation("✅ TEST 1 PASSED");
@@ -72,7 +72,7 @@ public class TestService
 
             if (user != null)
             {
-                _logger.LogInformation("Found user: {Name} ({Email})", user.Name, user.Email);
+                _logger.LogInformation("Found user: {FullName} ({Email})", user.FullName, user.Email);
                 _logger.LogInformation("✅ TEST 2 PASSED");
             }
             else
@@ -122,9 +122,10 @@ public class TestService
 
             var newUser = new User
             {
-                Name = $"Test User {DateTime.Now:HHmmss}",
+                Username = $"testuser{DateTime.Now:HHmmss}",
+                FullName = $"Test User {DateTime.Now:HHmmss}",
                 Email = $"test{DateTime.Now:HHmmss}@example.com",
-                Password = "password123",
+                PasswordHash = "hashed_password_123",
                 IsActive = true
             };
 
@@ -135,7 +136,7 @@ public class TestService
                 "User.InsertUser",
                 newUser);
 
-            _logger.LogInformation("Inserted {Rows} row(s). User: {Name}", rowsAffected, newUser.Name);
+            _logger.LogInformation("Inserted {Rows} row(s). User: {FullName}", rowsAffected, newUser.FullName);
             _logger.LogInformation("✅ TEST 4 PASSED");
 
             return rowsAffected;
@@ -169,7 +170,7 @@ public class TestService
                 return;
             }
 
-            _logger.LogInformation("User: {Name}", user.Name);
+            _logger.LogInformation("User: {FullName}", user.FullName);
 
             // Get products from DAO002 (if exists)
             try
@@ -211,25 +212,27 @@ public class TestService
             {
                 var user1 = new User
                 {
-                    Name = $"Transaction User 1 {DateTime.Now:HHmmss}",
+                    Username = $"transuser1_{DateTime.Now:HHmmss}",
+                    FullName = $"Transaction User 1 {DateTime.Now:HHmmss}",
                     Email = $"trans1_{DateTime.Now:HHmmss}@example.com",
-                    Password = "password123",
+                    PasswordHash = "hashed_password_123",
                     IsActive = true
                 };
 
                 var user2 = new User
                 {
-                    Name = $"Transaction User 2 {DateTime.Now:HHmmss}",
+                    Username = $"transuser2_{DateTime.Now:HHmmss}",
+                    FullName = $"Transaction User 2 {DateTime.Now:HHmmss}",
                     Email = $"trans2_{DateTime.Now:HHmmss}@example.com",
-                    Password = "password123",
+                    PasswordHash = "hashed_password_123",
                     IsActive = true
                 };
 
                 await conn.StatementExecuteAsync("User.InsertUser", user1);
-                _logger.LogInformation("  - Inserted user 1: {Name}", user1.Name);
+                _logger.LogInformation("  - Inserted user 1: {FullName}", user1.FullName);
 
                 await conn.StatementExecuteAsync("User.InsertUser", user2);
-                _logger.LogInformation("  - Inserted user 2: {Name}", user2.Name);
+                _logger.LogInformation("  - Inserted user 2: {FullName}", user2.FullName);
             });
 
             _logger.LogInformation("✅ TEST 6 PASSED - Transaction committed");
