@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using WSC.DataAccess.Constants;
 using WSC.DataAccess.Core;
 using WSC.DataAccess.Mapping;
 using WSC.DataAccess.RealDB.Test.Models;
@@ -7,13 +8,13 @@ using WSC.DataAccess.Repository;
 namespace WSC.DataAccess.RealDB.Test.Repositories;
 
 /// <summary>
-/// Example: Repository chỉ load SQL map file riêng của nó (DAO005.xml)
+/// Example: Repository chỉ load SQL map file riêng của nó (ApplicationMap.xml)
 /// Không load các SQL map files khác, tránh conflict
 /// </summary>
 public class ScopedApplicationRepository : ScopedSqlMapRepository<Application>
 {
-    // Chỉ định SQL map file riêng cho repository này
-    private const string SQL_MAP_FILE = "SqlMaps/ApplicationMap.xml";
+    // Sử dụng constant thay vì hardcoded string
+    private const string SQL_MAP_FILE = SqlMapFiles.APPLICATION_MAP;
 
     /// <summary>
     /// Constructor - Tự động load chỉ DAO005.xml (ApplicationMap.xml)

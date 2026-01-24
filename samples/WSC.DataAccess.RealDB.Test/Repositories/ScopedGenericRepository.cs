@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using WSC.DataAccess.Constants;
 using WSC.DataAccess.Core;
 using WSC.DataAccess.Mapping;
 using WSC.DataAccess.Repository;
@@ -11,8 +12,8 @@ namespace WSC.DataAccess.RealDB.Test.Repositories;
 /// </summary>
 public class ScopedGenericRepository : ScopedSqlMapRepository<dynamic>
 {
-    // Chỉ định SQL map file riêng
-    private const string SQL_MAP_FILE = "SqlMaps/GenericMap.xml";
+    // Sử dụng constant thay vì hardcoded string
+    private const string SQL_MAP_FILE = SqlMapFiles.GENERIC_MAP;
 
     public ScopedGenericRepository(
         IDbSessionFactory sessionFactory,
