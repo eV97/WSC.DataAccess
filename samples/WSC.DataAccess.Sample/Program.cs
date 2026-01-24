@@ -29,20 +29,23 @@ services.AddLogging(builder =>
     builder.SetMinimumLevel(LogLevel.Information);
 });
 
-// WSC.DataAccess with ISql Pattern
+// WSC.DataAccess with ISql Pattern - Auto-discovery
 services.AddWscDataAccess(connectionString!, options =>
 {
-    Console.WriteLine("📋 Registering SQL Map DAOs:");
-    options.ConfigureSqlMaps(provider =>
+    Console.WriteLine("📋 Auto-discovering SQL Map DAOs from 'SqlMaps' directory...");
+
+    // Auto-discover tất cả .xml files trong thư mục SqlMaps
+    options.AutoDiscoverSqlMaps("SqlMaps");
+
+    var daoCount = options.SqlMapProvider.Files.Count;
+    Console.WriteLine($"  ✅ {daoCount} DAOs auto-registered");
+
+    // Show registered DAOs
+    foreach (var registration in options.SqlMapProvider.Files)
     {
-        provider.AddFile(Provider.DAO000, "SqlMaps/DAO000.xml", "System");
-        provider.AddFile(Provider.DAO001, "SqlMaps/DAO001.xml", "User");
-        provider.AddFile(Provider.DAO002, "SqlMaps/DAO002.xml", "Product");
-        provider.AddFile(Provider.DAO003, "SqlMaps/DAO003.xml", "Order");
-        provider.AddFile(Provider.DAO004, "SqlMaps/DAO004.xml", "Category");
-        provider.AddFile(Provider.DAO005, "SqlMaps/DAO005.xml", "Reports");
-        Console.WriteLine("  ✅ 6 DAOs registered");
-    });
+        var description = Provider.GetDescription(registration.Key);
+        Console.WriteLine($"     - {registration.Key}: {description}");
+    }
 });
 
 services.AddScoped<TestService>();

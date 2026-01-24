@@ -131,4 +131,44 @@ public class DataAccessOptions
     {
         configure?.Invoke(SqlMapProvider);
     }
+
+    /// <summary>
+    /// Auto-discover và register tất cả SQL map files trong thư mục
+    /// </summary>
+    /// <param name="directory">Thư mục chứa SQL map files (ví dụ: "SqlMaps")</param>
+    /// <param name="connectionName">Connection name (mặc định: "Default")</param>
+    /// <param name="searchPattern">Pattern để filter files (mặc định: "*.xml")</param>
+    public void AutoDiscoverSqlMaps(string directory, string? connectionName = null, string searchPattern = "*.xml")
+    {
+        if (string.IsNullOrWhiteSpace(directory))
+            throw new ArgumentException("Directory cannot be null or empty", nameof(directory));
+
+        connectionName ??= SqlMapProvider.DEFAULT_CONNECTION;
+
+        // Check if directory exists
+        if (!Directory.Exists(directory))
+        {
+            throw new DirectoryNotFoundException($"Directory '{directory}' not found for SQL map auto-discovery");
+        }
+
+        // Find all XML files
+        var xmlFiles = Directory.GetFiles(directory, searchPattern, SearchOption.TopDirectoryOnly);
+
+        if (xmlFiles.Length == 0)
+        {
+            throw new InvalidOperationException($"No SQL map files found in '{directory}' matching pattern '{searchPattern}'");
+        }
+
+        // Register each file
+        foreach (var filePath in xmlFiles)
+        {
+            // Extract DAO name from filename (remove extension)
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+
+            // Use relative path from current directory
+            var relativePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), filePath);
+
+            SqlMapProvider.AddFile(fileName, relativePath, connectionName);
+        }
+    }
 }
