@@ -17,8 +17,15 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
-var connectionString = configuration.GetConnectionString("DefaultConnection");
-Console.WriteLine($"📌 Connection: {(connectionString != null ? connectionString.Substring(0, Math.Min(50, connectionString.Length)) : "null")}...");
+// Read all connection strings
+var defaultConnection = configuration.GetConnectionString("DefaultConnection");
+var hisConnection = configuration.GetConnectionString("HISConnection");
+var lisConnection = configuration.GetConnectionString("LISConnection");
+
+Console.WriteLine("📌 Connection Strings:");
+Console.WriteLine($"  - Default: {(defaultConnection != null ? defaultConnection.Substring(0, Math.Min(50, defaultConnection.Length)) : "null")}...");
+Console.WriteLine($"  - HIS: {(hisConnection != null ? hisConnection.Substring(0, Math.Min(50, hisConnection.Length)) : "null")}...");
+Console.WriteLine($"  - LIS: {(lisConnection != null ? lisConnection.Substring(0, Math.Min(50, lisConnection.Length)) : "null")}...");
 Console.WriteLine();
 
 // DI Setup
@@ -29,13 +36,33 @@ services.AddLogging(builder =>
     builder.SetMinimumLevel(LogLevel.Information);
 });
 
-// WSC.DataAccess with ISql Pattern - Auto-discovery
-services.AddWscDataAccess(connectionString!, options =>
+// WSC.DataAccess with ISql Pattern - Auto-discovery + Multiple Connections
+services.AddWscDataAccess(defaultConnection!, options =>
 {
+    Console.WriteLine("📋 Registering Connection Strings:");
+
+    // Register additional named connections
+    if (!string.IsNullOrEmpty(hisConnection))
+    {
+        options.AddConnection("HIS", hisConnection);
+        Console.WriteLine("  ✅ HIS Connection registered");
+    }
+
+    if (!string.IsNullOrEmpty(lisConnection))
+    {
+        options.AddConnection("LIS", lisConnection);
+        Console.WriteLine("  ✅ LIS Connection registered");
+    }
+
+    Console.WriteLine();
     Console.WriteLine("📋 Auto-discovering SQL Map DAOs from 'SqlMaps' directory...");
 
-    // Auto-discover tất cả .xml files trong thư mục SqlMaps
+    // Auto-discover SQL maps for Default connection
     options.AutoDiscoverSqlMaps("SqlMaps");
+
+    // Hoặc có thể chỉ định connection cụ thể cho từng thư mục:
+    // options.AutoDiscoverSqlMaps("SqlMaps/HIS", "HIS");
+    // options.AutoDiscoverSqlMaps("SqlMaps/LIS", "LIS");
 
     var daoCount = options.SqlMapProvider.Files.Count;
     Console.WriteLine($"  ✅ {daoCount} DAOs auto-registered");
@@ -44,7 +71,7 @@ services.AddWscDataAccess(connectionString!, options =>
     foreach (var registration in options.SqlMapProvider.Files)
     {
         var description = Provider.GetDescription(registration.Key);
-        Console.WriteLine($"     - {registration.Key}: {description}");
+        Console.WriteLine($"     - {registration.Key} ({registration.ConnectionName}): {description}");
     }
 });
 
