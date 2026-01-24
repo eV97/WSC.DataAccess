@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="User">
+  <!--
+    DAO001: User Management Queries
+    Purpose: User CRUD operations, authentication, user info
+  -->
+
+  <!-- Get all users -->
+  <select id="GetAllUsers">
+    <![CDATA[
+      SELECT
+        Id,
+        Username,
+        Email,
+        FullName,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Users
+      ORDER BY Username
+    ]]>
+  </select>
+
+  <!-- Get user by ID -->
+  <select id="GetUserById">
+    <![CDATA[
+      SELECT
+        Id,
+        Username,
+        Email,
+        FullName,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Users
+      WHERE Id = @Id
+    ]]>
+  </select>
+
+  <!-- Get user by username -->
+  <select id="GetUserByUsername">
+    <![CDATA[
+      SELECT
+        Id,
+        Username,
+        Email,
+        FullName,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Users
+      WHERE Username = @Username
+    ]]>
+  </select>
+
+  <!-- Get user by email -->
+  <select id="GetUserByEmail">
+    <![CDATA[
+      SELECT
+        Id,
+        Username,
+        Email,
+        FullName,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Users
+      WHERE Email = @Email
+    ]]>
+  </select>
+
+  <!-- Get active users -->
+  <select id="GetActiveUsers">
+    <![CDATA[
+      SELECT
+        Id,
+        Username,
+        Email,
+        FullName,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Users
+      WHERE IsActive = 1
+      ORDER BY Username
+    ]]>
+  </select>
+
+  <!-- Get user count -->
+  <select id="GetUserCount" resultClass="int">
+    <![CDATA[
+      SELECT COUNT(*) FROM Users
+    ]]>
+  </select>
+
+  <!-- Insert user -->
+  <insert id="InsertUser">
+    <![CDATA[
+      INSERT INTO Users (Username, Email, FullName, PasswordHash, IsActive, CreatedAt)
+      VALUES (@Username, @Email, @FullName, @PasswordHash, @IsActive, GETDATE())
+
+      SELECT CAST(SCOPE_IDENTITY() AS INT)
+    ]]>
+  </insert>
+
+  <!-- Update user -->
+  <update id="UpdateUser">
+    <![CDATA[
+      UPDATE Users
+      SET
+        Email = @Email,
+        FullName = @FullName,
+        IsActive = @IsActive,
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Delete user -->
+  <delete id="DeleteUser">
+    <![CDATA[
+      DELETE FROM Users WHERE Id = @Id
+    ]]>
+  </delete>
+
+  <!-- Soft delete user (deactivate) -->
+  <update id="DeactivateUser">
+    <![CDATA[
+      UPDATE Users
+      SET IsActive = 0, UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Activate user -->
+  <update id="ActivateUser">
+    <![CDATA[
+      UPDATE Users
+      SET IsActive = 1, UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Check if username exists -->
+  <select id="UsernameExists" resultClass="bool">
+    <![CDATA[
+      SELECT CASE WHEN EXISTS(SELECT 1 FROM Users WHERE Username = @Username)
+        THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+      END
+    ]]>
+  </select>
+
+  <!-- Check if email exists -->
+  <select id="EmailExists" resultClass="bool">
+    <![CDATA[
+      SELECT CASE WHEN EXISTS(SELECT 1 FROM Users WHERE Email = @Email)
+        THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+      END
+    ]]>
+  </select>
+</sqlMap>

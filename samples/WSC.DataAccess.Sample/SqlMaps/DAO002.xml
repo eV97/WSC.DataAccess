@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sqlMap namespace="Product">
+  <!--
+    DAO002: Product Management Queries
+    Purpose: Product CRUD operations, catalog, inventory
+  -->
+
+  <!-- Get all products -->
+  <select id="GetAllProducts">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      ORDER BY ProductName
+    ]]>
+  </select>
+
+  <!-- Get product by ID -->
+  <select id="GetProductById">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      WHERE Id = @Id
+    ]]>
+  </select>
+
+  <!-- Get product by code -->
+  <select id="GetProductByCode">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      WHERE ProductCode = @ProductCode
+    ]]>
+  </select>
+
+  <!-- Get products by category -->
+  <select id="GetProductsByCategory">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      WHERE CategoryId = @CategoryId
+      ORDER BY ProductName
+    ]]>
+  </select>
+
+  <!-- Get active products -->
+  <select id="GetActiveProducts">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      WHERE IsActive = 1
+      ORDER BY ProductName
+    ]]>
+  </select>
+
+  <!-- Get products in stock -->
+  <select id="GetProductsInStock">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      WHERE StockQuantity > 0 AND IsActive = 1
+      ORDER BY ProductName
+    ]]>
+  </select>
+
+  <!-- Get products out of stock -->
+  <select id="GetProductsOutOfStock">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      WHERE StockQuantity = 0 AND IsActive = 1
+      ORDER BY ProductName
+    ]]>
+  </select>
+
+  <!-- Search products by name -->
+  <select id="SearchProductsByName">
+    <![CDATA[
+      SELECT
+        Id,
+        ProductCode,
+        ProductName,
+        Description,
+        CategoryId,
+        Price,
+        StockQuantity,
+        IsActive,
+        CreatedAt,
+        UpdatedAt
+      FROM Products
+      WHERE ProductName LIKE '%' + @SearchTerm + '%'
+      ORDER BY ProductName
+    ]]>
+  </select>
+
+  <!-- Get product count -->
+  <select id="GetProductCount" resultClass="int">
+    <![CDATA[
+      SELECT COUNT(*) FROM Products
+    ]]>
+  </select>
+
+  <!-- Get total inventory value -->
+  <select id="GetTotalInventoryValue" resultClass="decimal">
+    <![CDATA[
+      SELECT SUM(Price * StockQuantity)
+      FROM Products
+      WHERE IsActive = 1
+    ]]>
+  </select>
+
+  <!-- Insert product -->
+  <insert id="InsertProduct">
+    <![CDATA[
+      INSERT INTO Products (ProductCode, ProductName, Description, CategoryId, Price, StockQuantity, IsActive, CreatedAt)
+      VALUES (@ProductCode, @ProductName, @Description, @CategoryId, @Price, @StockQuantity, @IsActive, GETDATE())
+
+      SELECT CAST(SCOPE_IDENTITY() AS INT)
+    ]]>
+  </insert>
+
+  <!-- Update product -->
+  <update id="UpdateProduct">
+    <![CDATA[
+      UPDATE Products
+      SET
+        ProductName = @ProductName,
+        Description = @Description,
+        CategoryId = @CategoryId,
+        Price = @Price,
+        StockQuantity = @StockQuantity,
+        IsActive = @IsActive,
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Update stock quantity -->
+  <update id="UpdateStockQuantity">
+    <![CDATA[
+      UPDATE Products
+      SET
+        StockQuantity = @StockQuantity,
+        UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+
+  <!-- Delete product -->
+  <delete id="DeleteProduct">
+    <![CDATA[
+      DELETE FROM Products WHERE Id = @Id
+    ]]>
+  </delete>
+
+  <!-- Deactivate product -->
+  <update id="DeactivateProduct">
+    <![CDATA[
+      UPDATE Products
+      SET IsActive = 0, UpdatedAt = GETDATE()
+      WHERE Id = @Id
+    ]]>
+  </update>
+</sqlMap>
