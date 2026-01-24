@@ -4,51 +4,56 @@
     DAO000: System & Configuration Queries
     Purpose: System information, configuration, database metadata
   -->
-
+	<!-- Get database version -->
+	<select id="System.TestConnection" resultClass="boolean">
+		<![CDATA[
+      SELECT 1
+    ]]>
+	</select>
   <!-- Get database version -->
-  <select id="GetDatabaseVersion" resultClass="string">
+  <select id="System.GetDatabaseVersion" resultClass="string">
     <![CDATA[
       SELECT @@VERSION
     ]]>
   </select>
 
   <!-- Get current database name -->
-  <select id="GetCurrentDatabase" resultClass="string">
+  <select id="System.GetCurrentDatabase" resultClass="string">
     <![CDATA[
       SELECT DB_NAME()
     ]]>
   </select>
 
   <!-- Get current user -->
-  <select id="GetCurrentUser" resultClass="string">
+  <select id="System.GetCurrentUser" resultClass="string">
     <![CDATA[
       SELECT SYSTEM_USER
     ]]>
   </select>
 
   <!-- Get server name -->
-  <select id="GetServerName" resultClass="string">
+  <select id="System.GetServerName" resultClass="string">
     <![CDATA[
       SELECT @@SERVERNAME
     ]]>
   </select>
 
   <!-- Get current date time -->
-  <select id="GetCurrentDateTime" resultClass="DateTime">
+  <select id="System.GetCurrentDateTime" resultClass="DateTime">
     <![CDATA[
       SELECT GETDATE()
     ]]>
   </select>
 
   <!-- Simple test query -->
-  <select id="TestQuery" resultClass="int">
+  <select id="System.TestQuery" resultClass="int">
     <![CDATA[
       SELECT 1
     ]]>
   </select>
 
   <!-- Get database size -->
-  <select id="GetDatabaseSize">
+  <select id="System.GetDatabaseSize">
     <![CDATA[
       SELECT
         DB_NAME() AS DatabaseName,
@@ -59,7 +64,7 @@
   </select>
 
   <!-- List all tables -->
-  <select id="ListAllTables">
+  <select id="System.ListAllTables">
     <![CDATA[
       SELECT
         TABLE_SCHEMA AS SchemaName,
@@ -72,7 +77,7 @@
   </select>
 
   <!-- Get table count -->
-  <select id="GetTableCount" resultClass="int">
+  <select id="System.GetTableCount" resultClass="int">
     <![CDATA[
       SELECT COUNT(*)
       FROM INFORMATION_SCHEMA.TABLES
@@ -81,7 +86,7 @@
   </select>
 
   <!-- Get connection count -->
-  <select id="GetConnectionCount" resultClass="int">
+  <select id="System.GetConnectionCount" resultClass="int">
     <![CDATA[
       SELECT COUNT(*)
       FROM sys.dm_exec_sessions

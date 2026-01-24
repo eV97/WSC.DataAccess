@@ -28,7 +28,7 @@ public class ProgramAlternative
             .Build();
 
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        Console.WriteLine($"📌 Connection: {connectionString?.Substring(0, Math.Min(50, connectionString.Length ?? 0))}...");
+        Console.WriteLine($"📌 Connection: {connectionString?.Substring(0, Math.Min(50, connectionString.Length))}...");
         Console.WriteLine();
 
         // DI Setup

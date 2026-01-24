@@ -6,7 +6,7 @@
   -->
 
   <!-- Get all users -->
-  <select id="GetAllUsers">
+  <select id="User.GetAllUsers">
     <![CDATA[
       SELECT
         Id,
@@ -22,7 +22,7 @@
   </select>
 
   <!-- Get user by ID -->
-  <select id="GetUserById">
+  <select id="User.GetUserById">
     <![CDATA[
       SELECT
         Id,
@@ -38,7 +38,7 @@
   </select>
 
   <!-- Get user by username -->
-  <select id="GetUserByUsername">
+  <select id="User.GetUserByUsername">
     <![CDATA[
       SELECT
         Id,
@@ -54,7 +54,7 @@
   </select>
 
   <!-- Get user by email -->
-  <select id="GetUserByEmail">
+  <select id="User.GetUserByEmail">
     <![CDATA[
       SELECT
         Id,
@@ -70,7 +70,7 @@
   </select>
 
   <!-- Get active users -->
-  <select id="GetActiveUsers">
+  <select id="User.GetActiveUsers">
     <![CDATA[
       SELECT
         Id,
@@ -87,7 +87,7 @@
   </select>
 
   <!-- Get user count -->
-  <select id="GetUserCount" resultClass="int">
+  <select id="User.GetUserCount" resultClass="int">
     <![CDATA[
       SELECT COUNT(*) FROM Users
     ]]>

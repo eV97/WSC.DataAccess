@@ -6,8 +6,7 @@ using WSC.DataAccess.Sample;
 using WSC.DataAccess.Sample.Models;
 
 Console.WriteLine("╔══════════════════════════════════════════════════════════════════╗");
-Console.WriteLine("║  WSC.DataAccess - ISql Pattern Test                             ║");
-Console.WriteLine("║  Real Database Connection Test                                   ║");
+Console.WriteLine("║  WSC.DataAccess - ConfigurationSection Demo                     ║");
 Console.WriteLine("╚══════════════════════════════════════════════════════════════════╝");
 Console.WriteLine();
 
@@ -17,9 +16,10 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
-// Display connection strings
-Console.WriteLine("📌 Connection Strings:");
+// Get ConnectionStrings section
 var connectionStringsSection = configuration.GetSection("ConnectionStrings");
+
+Console.WriteLine("📌 Connection Strings from Section:");
 foreach (var conn in connectionStringsSection.GetChildren())
 {
     var value = conn.Value ?? "";
@@ -36,10 +36,10 @@ services.AddLogging(builder =>
     builder.SetMinimumLevel(LogLevel.Information);
 });
 
-// WSC.DataAccess with ISql Pattern - Auto-load connection strings from configuration
-services.AddWscDataAccess(configuration, configure: options =>
+// Use the IConfigurationSection overload
+services.AddWscDataAccess(connectionStringsSection, configure: options =>
 {
-    // Connection strings are auto-loaded from appsettings.json
+    // Connection strings are auto-loaded from section
     // DefaultConnection -> Default, HISConnection -> HIS, LISConnection -> LIS
 
     Console.WriteLine("📋 Auto-discovering SQL Map DAOs from 'SqlMaps' directory...");
@@ -47,13 +47,6 @@ services.AddWscDataAccess(configuration, configure: options =>
 
     var daoCount = options.SqlMapProvider.Files.Count;
     Console.WriteLine($"  ✅ {daoCount} DAOs auto-registered");
-
-    // Show registered DAOs
-    foreach (var registration in options.SqlMapProvider.Files)
-    {
-        var description = Provider.GetDescription(registration.Key);
-        Console.WriteLine($"     - {registration.Key}: {description}");
-    }
 });
 
 services.AddScoped<TestService>();
