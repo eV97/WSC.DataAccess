@@ -17,15 +17,15 @@ var configuration = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .Build();
 
-// Read all connection strings
-var defaultConnection = configuration.GetConnectionString("DefaultConnection");
-var hisConnection = configuration.GetConnectionString("HISConnection");
-var lisConnection = configuration.GetConnectionString("LISConnection");
-
+// Display connection strings
 Console.WriteLine("📌 Connection Strings:");
-Console.WriteLine($"  - Default: {(defaultConnection != null ? defaultConnection.Substring(0, Math.Min(50, defaultConnection.Length)) : "null")}...");
-Console.WriteLine($"  - HIS: {(hisConnection != null ? hisConnection.Substring(0, Math.Min(50, hisConnection.Length)) : "null")}...");
-Console.WriteLine($"  - LIS: {(lisConnection != null ? lisConnection.Substring(0, Math.Min(50, lisConnection.Length)) : "null")}...");
+var connectionStringsSection = configuration.GetSection("ConnectionStrings");
+foreach (var conn in connectionStringsSection.GetChildren())
+{
+    var value = conn.Value ?? "";
+    var displayValue = value.Length > 50 ? value.Substring(0, 50) + "..." : value;
+    Console.WriteLine($"   - {conn.Key}: {displayValue}");
+}
 Console.WriteLine();
 
 // DI Setup
@@ -36,8 +36,8 @@ services.AddLogging(builder =>
     builder.SetMinimumLevel(LogLevel.Information);
 });
 
-// WSC.DataAccess with ISql Pattern - Auto-discovery + Multiple Connections
-services.AddWscDataAccess(defaultConnection!, options =>
+// WSC.DataAccess with ISql Pattern - Auto-load connection strings from configuration
+services.AddWscDataAccess(configuration, options =>
 {
     Console.WriteLine("📋 Registering Connection Strings:");
 

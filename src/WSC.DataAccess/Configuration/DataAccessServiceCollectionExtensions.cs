@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WSC.DataAccess.Core;
@@ -26,6 +27,100 @@ public static class DataAccessServiceCollectionExtensions
 
         // Register connection factory
         services.AddSingleton<IDbConnectionFactory>(sp => new SqlConnectionFactory(connectionString));
+
+        // Register session factory
+        services.AddSingleton<IDbSessionFactory>(sp =>
+        {
+            var connectionFactory = sp.GetRequiredService<IDbConnectionFactory>();
+            var logger = sp.GetService<ILogger<DbSession>>();
+            var sessionFactory = new DbSessionFactory(connectionFactory, options.NamedConnectionStrings, logger);
+            return sessionFactory;
+        });
+
+        // Register SQL map provider (singleton để share across app)
+        services.AddSingleton(options.SqlMapProvider);
+
+        // Register SQL map configuration
+        services.AddSingleton(sp =>
+        {
+            var logger = sp.GetRequiredService<ILogger<SqlMapConfig>>();
+            var config = new SqlMapConfig(logger);
+
+            // Load SQL map files from old way (backward compatibility)
+            foreach (var sqlMapFile in options.SqlMapFiles)
+            {
+                config.LoadFromXml(sqlMapFile);
+            }
+
+            // Load SQL map files from provider (new way)
+            var provider = sp.GetRequiredService<SqlMapProvider>();
+            foreach (var filePath in provider.GetAllFilePaths())
+            {
+                config.LoadFromXml(filePath);
+            }
+
+            return config;
+        });
+
+        // Register SQL mapper
+        services.AddSingleton<SqlMapper>(sp =>
+        {
+            var config = sp.GetRequiredService<SqlMapConfig>();
+            var logger = sp.GetRequiredService<ILogger<SqlMapper>>();
+            return new SqlMapper(config, logger);
+        });
+
+        // Register SQL service (iBatis.NET style API)
+        services.AddScoped<ISql, SqlService>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds WSC Data Access services with automatic connection string loading from IConfiguration
+    /// </summary>
+    /// <param name="services">The service collection</param>
+    /// <param name="configuration">Configuration instance to load connection strings from</param>
+    /// <param name="defaultConnectionName">Name of the default connection (default: "DefaultConnection")</param>
+    /// <param name="configure">Optional configuration action</param>
+    /// <returns>The service collection</returns>
+    public static IServiceCollection AddWscDataAccess(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        string defaultConnectionName = "DefaultConnection",
+        Action<DataAccessOptions>? configure = null)
+    {
+        if (configuration == null)
+            throw new ArgumentNullException(nameof(configuration));
+
+        // Get default connection string
+        var defaultConnectionString = configuration.GetConnectionString(defaultConnectionName);
+        if (string.IsNullOrWhiteSpace(defaultConnectionString))
+            throw new ArgumentException($"Connection string '{defaultConnectionName}' not found in configuration", nameof(defaultConnectionName));
+
+        var options = new DataAccessOptions();
+
+        // Auto-load all connection strings from configuration
+        var connectionStringsSection = configuration.GetSection("ConnectionStrings");
+        if (connectionStringsSection != null)
+        {
+            foreach (var connectionString in connectionStringsSection.GetChildren())
+            {
+                var name = connectionString.Key;
+                var value = connectionString.Value;
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    options.NamedConnectionStrings[name] = value;
+                }
+            }
+        }
+
+        // Allow user to override or add more options
+        configure?.Invoke(options);
+
+        // Register connection factory with default connection
+        services.AddSingleton<IDbConnectionFactory>(sp => new SqlConnectionFactory(defaultConnectionString));
 
         // Register session factory
         services.AddSingleton<IDbSessionFactory>(sp =>
